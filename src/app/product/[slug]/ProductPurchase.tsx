@@ -1,28 +1,32 @@
 "use client";
 
-import { Camera, Check, Minus, Plus } from "lucide-react";
+import { Camera, Check, Minus, Plus, Ruler } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { SHIPPING } from "@/lib/brand";
-import { formatPrice } from "@/lib/format";
+import { PromoBox } from "@/components/VoucherList";
+import { BRAND } from "@/lib/brand";
+import { discountPercent, formatPrice } from "@/lib/format";
 import { MAX_QUANTITY, useCart } from "@/stores/cart";
 
 export type PurchaseProduct = {
   id: number;
+  sku: string;
   slug: string;
   name: string;
-  categoryName: string;
   description: string;
   material: string;
+  sleeve: string;
   price: number;
   compareAtPrice: number | null;
+  isNew: boolean;
   sizes: string[];
-  colors: { key: string; name: string; hex: string; image: string }[];
+  colors: { key: string; name: string; hex: string; image: string; photo: string | null }[];
 };
 
 export function ProductPurchase({ product }: { product: PurchaseProduct }) {
   const [colorKey, setColorKey] = useState(product.colors[0].key);
+  const [imageIndex, setImageIndex] = useState(0);
   const [size, setSize] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
@@ -30,6 +34,15 @@ export function ProductPurchase({ product }: { product: PurchaseProduct }) {
   const add = useCart((s) => s.add);
 
   const color = product.colors.find((c) => c.key === colorKey) ?? product.colors[0];
+  // Bộ ảnh của màu đang chọn: ảnh chụp thật (nếu có) + hình minh hoạ
+  const gallery = [color.photo, color.image].filter((src): src is string => Boolean(src));
+  const mainImage = gallery[Math.min(imageIndex, gallery.length - 1)];
+  const off = discountPercent(product.price, product.compareAtPrice);
+
+  function selectColor(key: string) {
+    setColorKey(key);
+    setImageIndex(0);
+  }
 
   function handleAdd() {
     if (!size) {
@@ -45,71 +58,100 @@ export function ProductPurchase({ product }: { product: PurchaseProduct }) {
         colorName: color.name,
         size,
         price: product.price,
-        image: color.image,
+        image: color.photo ?? color.image,
       },
       quantity,
     );
     setAdded(true);
-    setTimeout(() => setAdded(false), 2200);
+    setTimeout(() => setAdded(false), 2000);
   }
 
   return (
-    <div className="mt-8 grid gap-12 lg:grid-cols-[1.25fr_1fr] lg:gap-20">
-      {/* Ảnh */}
-      <div className="grid gap-4 md:grid-cols-[88px_1fr]">
-        <div className="order-2 flex gap-3 md:order-1 md:flex-col">
-          {product.colors.map((c) => (
+    <div className="mt-6 grid gap-10 lg:grid-cols-[1.1fr_1fr]">
+      {/* ===== Ảnh ===== */}
+      <div className="grid grid-cols-[72px_1fr] gap-3">
+        <div className="flex flex-col gap-2">
+          {gallery.map((src, i) => (
             <button
-              key={c.key}
-              onClick={() => setColorKey(c.key)}
-              className={`relative aspect-[4/5] w-20 bg-sand transition md:w-full ${c.key === colorKey ? "ring-1 ring-noir" : "opacity-70 hover:opacity-100"}`}
-              aria-label={`Xem màu ${c.name}`}
+              key={src}
+              onClick={() => setImageIndex(i)}
+              className={`relative aspect-[37/48] overflow-hidden border bg-surface ${src === mainImage ? "border-ink" : "border-line hover:border-subtle"}`}
+              aria-label={`Xem ảnh ${i + 1}`}
             >
-              <Image src={c.image} alt="" fill unoptimized className="object-contain p-2" />
+              <Image src={src} alt="" fill unoptimized className={src.endsWith(".svg") ? "object-contain p-1" : "object-cover"} />
             </button>
           ))}
         </div>
-        <div className="relative order-1 aspect-[4/5] bg-sand md:order-2">
-          <Image src={color.image} alt={`${product.name} — ${color.name}`} fill unoptimized priority className="object-contain p-12" />
+        <div className="relative aspect-[37/48] overflow-hidden bg-surface">
+          <Image
+            src={mainImage}
+            alt={`${product.name} — ${color.name}`}
+            fill
+            unoptimized
+            priority
+            className={mainImage.endsWith(".svg") ? "object-contain p-10" : "object-cover"}
+          />
         </div>
       </div>
 
-      {/* Thông tin & mua */}
-      <div className="lg:sticky lg:top-36 lg:self-start">
-        <p className="eyebrow text-gold-deep">{product.categoryName}</p>
-        <h1 className="mt-3 font-serif text-[44px] leading-[1.1] font-medium">{product.name}</h1>
-        <p className="mt-4 font-serif text-2xl">
-          {formatPrice(product.price)}
-          {product.compareAtPrice && (
-            <span className="ml-3 text-lg text-stone line-through">{formatPrice(product.compareAtPrice)}</span>
-          )}
+      {/* ===== Thông tin ===== */}
+      <div>
+        <h1 className="text-2xl font-bold">{product.name}</h1>
+        <p className="mt-1 text-[13px] text-muted">
+          Thương hiệu: <span className="text-accent">{BRAND.name}</span>
+          <span className="mx-2 text-line">|</span>
+          Mã sản phẩm: <span className="text-accent">{product.sku}</span>
         </p>
-        <p className="mt-6 text-stone">{product.description}</p>
 
-        <div className="mt-10 border-t border-line pt-8">
-          <p className="text-sm">
-            Màu sắc: <span className="font-medium">{color.name}</span>
+        <div className="mt-4 flex items-center gap-3">
+          <span className="text-2xl font-extrabold text-sale">{formatPrice(product.price)}</span>
+          {off > 0 && (
+            <>
+              <span className="text-muted line-through">{formatPrice(product.compareAtPrice!)}</span>
+              <span className="badge-sale">-{off}%</span>
+            </>
+          )}
+        </div>
+        {off > 0 && <p className="text-[13px] text-muted">(Tiết kiệm: <span className="text-sale">{formatPrice(product.compareAtPrice! - product.price)}</span>)</p>}
+        {product.isNew && <span className="badge-new mt-3">🔥 Hàng mới về</span>}
+
+        <PromoBox />
+
+        <div className="mt-6">
+          <p className="text-sm font-bold">
+            Màu sắc: <span className="font-normal uppercase">{color.name}</span>
           </p>
-          <div className="mt-3 flex gap-3">
+          <div className="mt-2 flex gap-2">
             {product.colors.map((c) => (
               <button
                 key={c.key}
-                onClick={() => setColorKey(c.key)}
-                className={`size-9 rounded-full border border-noir/15 ring-offset-2 ring-offset-ivory transition ${c.key === colorKey ? "ring-1 ring-noir" : ""}`}
-                style={{ background: c.hex }}
+                onClick={() => selectColor(c.key)}
+                className={`relative size-11 overflow-hidden rounded-full border-2 bg-surface ${c.key === color.key ? "border-ink" : "border-transparent"}`}
+                title={c.name}
                 aria-label={c.name}
-                aria-pressed={c.key === colorKey}
-              />
+                aria-pressed={c.key === color.key}
+              >
+                {c.photo ? (
+                  <Image src={c.photo} alt="" fill unoptimized className="object-cover" />
+                ) : (
+                  <span className="absolute inset-1 rounded-full" style={{ background: c.hex }} />
+                )}
+              </button>
             ))}
           </div>
         </div>
 
-        <div className="mt-8">
+        <div className="mt-5">
           <div className="flex items-center justify-between text-sm">
-            <p>Kích cỡ</p>
-            {sizeError && <p className="text-danger">Vui lòng chọn kích cỡ</p>}
+            <p className="font-bold">
+              Kích thước: <span className="font-normal">{size ?? ""}</span>
+              {sizeError && <span className="ml-2 font-normal text-sale">Vui lòng chọn kích thước</span>}
+            </p>
+            <span className="flex items-center gap-1 text-muted underline">
+              <Ruler size={14} /> Hướng dẫn chọn size
+            </span>
           </div>
-          <div className="mt-3 grid grid-cols-4 gap-2">
+          <div className="mt-2 flex gap-2">
             {product.sizes.map((s) => (
               <button
                 key={s}
@@ -117,7 +159,7 @@ export function ProductPurchase({ product }: { product: PurchaseProduct }) {
                   setSize(s);
                   setSizeError(false);
                 }}
-                className={`h-12 border text-sm transition ${s === size ? "border-noir bg-noir text-ivory" : sizeError ? "border-danger" : "border-line hover:border-noir"}`}
+                className={`h-9 min-w-12 rounded border px-3 text-sm ${s === size ? "border-ink bg-ink text-white" : sizeError ? "border-sale" : "border-line hover:border-ink"}`}
                 aria-pressed={s === size}
               >
                 {s}
@@ -126,17 +168,28 @@ export function ProductPurchase({ product }: { product: PurchaseProduct }) {
           </div>
         </div>
 
-        <div className="mt-8 flex gap-3">
-          <div className="flex h-12 items-center border border-line">
-            <button className="grid h-full w-11 place-items-center" onClick={() => setQuantity((q) => Math.max(1, q - 1))} aria-label="Giảm số lượng">
+        <dl className="mt-5 grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <dt className="font-bold">Kiểu tay áo:</dt>
+            <dd>{product.sleeve === "long" ? "Tay dài" : "Tay ngắn"}</dd>
+          </div>
+          <div>
+            <dt className="font-bold">Chất liệu:</dt>
+            <dd>{product.material}</dd>
+          </div>
+        </dl>
+
+        <div className="mt-6 flex gap-3">
+          <div className="flex h-11 items-center rounded border border-line">
+            <button className="grid h-full w-10 place-items-center" onClick={() => setQuantity((q) => Math.max(1, q - 1))} aria-label="Giảm số lượng">
               <Minus size={14} />
             </button>
-            <span className="w-8 text-center text-sm">{quantity}</span>
-            <button className="grid h-full w-11 place-items-center" onClick={() => setQuantity((q) => Math.min(MAX_QUANTITY, q + 1))} aria-label="Tăng số lượng">
+            <span className="w-8 text-center">{quantity}</span>
+            <button className="grid h-full w-10 place-items-center" onClick={() => setQuantity((q) => Math.min(MAX_QUANTITY, q + 1))} aria-label="Tăng số lượng">
               <Plus size={14} />
             </button>
           </div>
-          <button onClick={handleAdd} className="btn btn-primary flex-1">
+          <button onClick={handleAdd} className="btn btn-primary flex-1 uppercase">
             {added ? (
               <>
                 <Check size={16} /> Đã thêm vào giỏ
@@ -146,22 +199,14 @@ export function ProductPurchase({ product }: { product: PurchaseProduct }) {
             )}
           </button>
         </div>
-        <Link href={`/try-on?product=${product.slug}&color=${color.key}`} className="btn btn-gold mt-3 w-full">
-          <Camera size={16} strokeWidth={1.6} /> Thử ngay bằng camera
+        <Link href={`/try-on?product=${product.slug}&color=${color.key}`} className="btn btn-accent mt-3 w-full uppercase">
+          <Camera size={18} /> Thử ngay bằng camera
         </Link>
 
-        <dl className="mt-10 divide-y divide-line border-y border-line text-sm">
-          <div className="py-5">
-            <dt className="eyebrow">Chất liệu</dt>
-            <dd className="mt-2 text-stone">{product.material}</dd>
-          </div>
-          <div className="py-5">
-            <dt className="eyebrow">Giao hàng & đổi trả</dt>
-            <dd className="mt-2 text-stone">
-              Miễn phí giao hàng cho đơn từ {formatPrice(SHIPPING.freeFrom)}. Đổi size hoặc trả hàng miễn phí trong 30 ngày.
-            </dd>
-          </div>
-        </dl>
+        <div className="mt-8 border-t border-line pt-6">
+          <h2 className="font-bold uppercase">Mô tả sản phẩm</h2>
+          <p className="mt-2 text-muted">{product.description}</p>
+        </div>
       </div>
     </div>
   );

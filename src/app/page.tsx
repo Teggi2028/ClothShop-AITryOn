@@ -1,143 +1,162 @@
-import { ArrowRight, Camera } from "lucide-react";
+import { Camera, ChevronRight, RefreshCw, ShieldCheck, Truck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { ProductCard } from "@/components/ProductCard";
-import { getCategories, getFeaturedProducts, getProducts } from "@/lib/products";
+import { VoucherCards } from "@/components/VoucherList";
+import { getCategories, getFeaturedProducts, getNewArrivals, getProducts } from "@/lib/products";
 
-const STEPS = [
-  { no: "01", title: "Chọn thiết kế", text: "Lựa mẫu áo và màu sắc bạn yêu thích ngay trong phòng thử." },
-  { no: "02", title: "Bật camera", text: "Đứng hoặc ngồi thẳng trước laptop, áo sẽ tự khớp theo vai và dáng người." },
-  { no: "03", title: "Chụp & quyết định", text: "Lưu lại khoảnh khắc, so sánh các phối màu rồi thêm vào giỏ." },
+const SERVICES = [
+  { icon: Truck, title: "Miễn phí giao hàng", text: "Cho đơn từ 500.000₫" },
+  { icon: RefreshCw, title: "Đổi trả 30 ngày", text: "Đổi size, đổi mẫu dễ dàng" },
+  { icon: ShieldCheck, title: "Kiểm tra khi nhận", text: "Ưng ý mới thanh toán" },
+  { icon: Camera, title: "Thử đồ bằng camera", text: "Xem áo trên người bạn" },
 ];
 
-const VALUES = ["Chất liệu tuyển chọn", "May đo tỉ mỉ", "Đổi trả trong 30 ngày", "Thử trước khi mua"];
+const STEPS = [
+  { no: 1, title: "Chọn mẫu áo", text: "Vào phòng thử, chọn mẫu và màu bạn thích." },
+  { no: 2, title: "Bật camera", text: "Ngồi thẳng trước laptop, áo tự khớp theo vai." },
+  { no: 3, title: "Chụp & đặt hàng", text: "Lưu ảnh, so sánh màu rồi thêm vào giỏ." },
+];
+
+function SectionHeader({ title, href }: { title: string; href: string }) {
+  return (
+    <div className="flex items-end justify-between gap-4">
+      <h2 className="section-title uppercase">{title}</h2>
+      <Link href={href} className="flex items-center text-sm text-muted hover:text-accent">
+        Xem tất cả <ChevronRight size={16} />
+      </Link>
+    </div>
+  );
+}
 
 export default async function HomePage() {
-  const [featured, categories, all] = await Promise.all([getFeaturedProducts(), getCategories(), getProducts()]);
-  const hero = all.find((p) => p.slug === "blazer-wool-tailored") ?? all[0];
-  const heroColor = hero.colors.find((c) => c.key === "navy") ?? hero.colors[0];
+  const [newArrivals, featured, categories, all] = await Promise.all([
+    getNewArrivals(),
+    getFeaturedProducts(),
+    getCategories(),
+    getProducts(),
+  ]);
+  const heroPhotos = all.flatMap((p) => p.colors.filter((c) => c.photo).map((c) => ({ src: c.photo!, alt: p.name }))).slice(0, 3);
 
   return (
-    <>
-      {/* ===== Hero ===== */}
-      <section className="bg-noir text-ivory">
-        <div className="container-lux grid min-h-[640px] items-center gap-16 py-20 lg:grid-cols-[1.1fr_1fr]">
-          <div>
-            <p className="eyebrow text-gold">Bộ sưu tập Thu Đông 2026</p>
-            <h1 className="mt-6 font-serif text-5xl leading-[1.05] font-medium md:text-[68px]">
-              Mặc thử trước.
-              <br />
-              <em className="text-gold">Chọn lựa tinh tế.</em>
-            </h1>
-            <p className="mt-8 max-w-md text-ivory/70">
-              Phòng thử trực tuyến của AURA dùng camera trên laptop để bạn ngắm mình trong từng thiết kế, ngay tại nhà,
-              trước khi quyết định.
-            </p>
-            <div className="mt-10 flex flex-wrap gap-4">
-              <Link href="/try-on" className="btn btn-gold">
-                <Camera size={16} strokeWidth={1.6} /> Vào phòng thử
-              </Link>
-              <Link href="/shop" className="btn btn-outline text-ivory hover:!border-ivory hover:!bg-ivory hover:!text-noir">
-                Khám phá bộ sưu tập
-              </Link>
-            </div>
-          </div>
-
-          <div className="relative mx-auto w-full max-w-[520px]">
-            <div className="absolute -inset-4 border border-gold/40" aria-hidden />
-            <div className="relative aspect-[4/5] bg-gradient-to-b from-[#2a2724] to-[#1a1817]">
-              <Image src={heroColor.image} alt={hero.name} fill unoptimized priority className="object-contain p-12" />
-              {/* Gợi ý giao diện phòng thử */}
-              <div className="absolute top-5 left-5 flex items-center gap-2 bg-noir/60 px-3 py-1.5 text-[11px] tracking-[0.14em] uppercase backdrop-blur">
-                <span className="size-1.5 animate-pulse rounded-full bg-gold" /> Đang thử trực tiếp
-              </div>
-            </div>
-            <p className="mt-8 text-center font-serif text-lg text-ivory/80 italic">{hero.name}</p>
+    <div className="container-shop">
+      {/* ===== Banner ===== */}
+      <section className="mt-6 grid overflow-hidden rounded-lg bg-gradient-to-br from-[#14243b] via-[#1d3557] to-[#2b4f7e] text-white lg:grid-cols-[1fr_1.1fr]">
+        <div className="flex flex-col justify-center p-10 lg:p-14">
+          <p className="w-fit rounded-full bg-promo px-3 py-1 text-xs font-extrabold text-ink uppercase">Bộ sưu tập Thu Đông 2026</p>
+          <h1 className="mt-5 text-4xl leading-tight font-extrabold uppercase lg:text-5xl">
+            Hàng mới về
+            <br />
+            <span className="text-promo">Giảm đến 50%</span>
+          </h1>
+          <p className="mt-4 max-w-md text-white/80">
+            Hơn 15 mẫu áo nam mới. Không chắc có hợp? Bật camera và thử ngay trên web trước khi đặt hàng.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href="/shop" className="btn bg-white text-ink hover:bg-promo">
+              Mua ngay
+            </Link>
+            <Link href="/try-on" className="btn btn-accent">
+              <Camera size={18} /> Thử đồ bằng camera
+            </Link>
           </div>
         </div>
-      </section>
-
-      {/* ===== Giá trị ===== */}
-      <section className="border-b border-line">
-        <ul className="container-lux grid grid-cols-2 gap-y-4 py-6 text-center md:grid-cols-4">
-          {VALUES.map((v) => (
-            <li key={v} className="eyebrow text-stone">
-              {v}
-            </li>
+        <div className="grid grid-cols-3 gap-2 p-4 lg:p-6">
+          {heroPhotos.map((p, i) => (
+            <div key={p.src} className={`relative overflow-hidden rounded-md bg-white ${i === 1 ? "mt-8" : "mb-8"}`}>
+              <Image src={p.src} alt={p.alt} fill unoptimized priority className="object-cover" />
+            </div>
           ))}
-        </ul>
+        </div>
       </section>
 
-      {/* ===== Sản phẩm nổi bật ===== */}
-      <section className="container-lux pt-28">
-        <div className="flex items-end justify-between gap-6">
-          <div>
-            <p className="eyebrow text-gold-deep">Tuyển chọn</p>
-            <h2 className="mt-3 font-serif text-4xl font-medium">Những thiết kế được yêu thích</h2>
+      {/* ===== Dịch vụ ===== */}
+      <section className="mt-6 grid grid-cols-2 gap-4 rounded-lg border border-line p-5 lg:grid-cols-4">
+        {SERVICES.map(({ icon: Icon, title, text }) => (
+          <div key={title} className="flex items-center gap-3">
+            <Icon className="shrink-0 text-accent" size={30} strokeWidth={1.5} />
+            <div>
+              <p className="font-bold">{title}</p>
+              <p className="text-xs text-muted">{text}</p>
+            </div>
           </div>
-          <Link href="/shop" className="link-underline hidden pb-1 text-sm sm:block">
-            Xem tất cả
-          </Link>
+        ))}
+      </section>
+
+      {/* ===== Voucher ===== */}
+      <section className="mt-10">
+        <VoucherCards />
+      </section>
+
+      {/* ===== Danh mục ===== */}
+      <section className="mt-14">
+        <h2 className="section-title uppercase">Danh mục sản phẩm</h2>
+        <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          {categories.map((c) => {
+            const sample = all.find((p) => p.categoryId === c.id && p.colors[0].photo) ?? all.find((p) => p.categoryId === c.id);
+            const color = sample?.colors[0];
+            return (
+              <Link key={c.id} href={`/shop?category=${c.slug}`} className="group text-center">
+                <div className="relative aspect-square overflow-hidden rounded-full bg-surface">
+                  {color && (
+                    <Image
+                      src={color.photo ?? color.image}
+                      alt=""
+                      fill
+                      unoptimized
+                      className={`${color.photo ? "object-cover" : "object-contain p-6"} transition duration-500 group-hover:scale-105`}
+                    />
+                  )}
+                </div>
+                <p className="mt-3 font-bold group-hover:text-accent">{c.name}</p>
+              </Link>
+            );
+          })}
         </div>
-        <div className="mt-12 grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-3 xl:grid-cols-4">
-          {featured.map((p) => (
+      </section>
+
+      {/* ===== Hàng mới về ===== */}
+      <section className="mt-14">
+        <SectionHeader title="Hàng mới về" href="/shop?sort=newest" />
+        <div className="mt-6 grid grid-cols-2 gap-x-5 gap-y-10 md:grid-cols-3 lg:grid-cols-4">
+          {newArrivals.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}
         </div>
       </section>
 
       {/* ===== Phòng thử ===== */}
-      <section className="container-lux pt-32">
-        <div className="grid gap-16 bg-pearl p-10 md:p-16 lg:grid-cols-[1fr_1.4fr]">
-          <div>
-            <p className="eyebrow text-gold-deep">Dịch vụ độc quyền</p>
-            <h2 className="mt-3 font-serif text-4xl leading-tight font-medium">Phòng thử riêng, ngay trên laptop của bạn</h2>
-            <p className="mt-6 text-stone">
-              Công nghệ nhận diện dáng người chạy trực tiếp trên trình duyệt. Hình ảnh của bạn không bao giờ rời khỏi
-              thiết bị.
-            </p>
-            <Link href="/try-on" className="btn btn-primary mt-10">
-              Thử ngay <ArrowRight size={16} strokeWidth={1.4} />
-            </Link>
-          </div>
-          <ol className="grid gap-10 sm:grid-cols-3">
-            {STEPS.map((s) => (
-              <li key={s.no} className="border-t border-line pt-6">
-                <span className="font-serif text-5xl text-gold">{s.no}</span>
-                <h3 className="mt-4 text-[13px] font-medium tracking-[0.12em] uppercase">{s.title}</h3>
-                <p className="mt-3 text-sm text-stone">{s.text}</p>
-              </li>
-            ))}
-          </ol>
+      <section className="mt-14 grid gap-8 rounded-lg bg-accent-soft p-8 lg:grid-cols-[1fr_1.6fr] lg:p-10">
+        <div>
+          <p className="font-extrabold text-accent uppercase">Tính năng mới</p>
+          <h2 className="mt-2 text-3xl font-extrabold">Thử áo bằng camera, ngay trên laptop</h2>
+          <p className="mt-3 text-muted">
+            Nhận diện dáng người chạy ngay trên trình duyệt, hình ảnh của bạn không bao giờ rời khỏi máy.
+          </p>
+          <Link href="/try-on" className="btn btn-accent mt-6">
+            <Camera size={18} /> Vào phòng thử
+          </Link>
         </div>
+        <ol className="grid gap-4 sm:grid-cols-3">
+          {STEPS.map((s) => (
+            <li key={s.no} className="rounded-md bg-white p-5">
+              <span className="grid size-9 place-items-center rounded-full bg-accent font-extrabold text-white">{s.no}</span>
+              <h3 className="mt-3 font-bold">{s.title}</h3>
+              <p className="mt-1 text-[13px] text-muted">{s.text}</p>
+            </li>
+          ))}
+        </ol>
       </section>
 
-      {/* ===== Danh mục ===== */}
-      <section className="container-lux pt-32">
-        <h2 className="text-center font-serif text-4xl font-medium">Mua sắm theo danh mục</h2>
-        <div className="mt-12 grid grid-cols-2 gap-6 lg:grid-cols-4">
-          {categories.map((c) => {
-            const sample = all.find((p) => p.categoryId === c.id);
-            return (
-              <Link key={c.id} href={`/shop?category=${c.slug}`} className="group relative block aspect-[3/4] overflow-hidden bg-sand">
-                {sample && (
-                  <Image
-                    src={sample.colors[0].image}
-                    alt=""
-                    fill
-                    unoptimized
-                    className="object-contain p-10 transition duration-700 group-hover:scale-105"
-                  />
-                )}
-                <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-noir/70 to-transparent p-6 pt-16 text-ivory">
-                  <span className="font-serif text-2xl">{c.name}</span>
-                  <ArrowRight size={18} strokeWidth={1.4} />
-                </div>
-              </Link>
-            );
-          })}
+      {/* ===== Bán chạy ===== */}
+      <section className="mt-14">
+        <SectionHeader title="Sản phẩm bán chạy" href="/shop" />
+        <div className="mt-6 grid grid-cols-2 gap-x-5 gap-y-10 md:grid-cols-3 lg:grid-cols-4">
+          {featured.map((p) => (
+            <ProductCard key={p.id} product={p} />
+          ))}
         </div>
       </section>
-    </>
+    </div>
   );
 }

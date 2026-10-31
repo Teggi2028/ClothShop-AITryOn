@@ -8,6 +8,7 @@ import { randomInt } from "node:crypto";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { shippingFeeFor } from "@/lib/format";
+import { checkVoucher } from "@/lib/vouchers";
 
 const PHONE_VN = /^(0|\+84)(3|5|7|8|9)\d{8}$/;
 
@@ -21,6 +22,7 @@ const checkoutSchema = z.object({
   email: z.union([z.literal(""), z.email("Email chưa đúng định dạng")]),
   address: z.string().trim().min(10, "Vui lòng nhập địa chỉ đầy đủ (số nhà, đường, phường/xã, tỉnh/thành)").max(300),
   note: z.string().trim().max(500, "Ghi chú tối đa 500 ký tự"),
+  voucherCode: z.string().trim().max(30),
   items: z
     .array(
       z.object({
@@ -81,6 +83,14 @@ export async function placeOrder(input: CheckoutInput): Promise<CheckoutResult> 
   const subtotal = lines.reduce((sum, l) => sum + l.unitPrice * l.quantity, 0);
   const shippingFee = shippingFeeFor(subtotal);
 
+  // Mã giảm giá: kiểm tra lại ở server theo tạm tính thật
+  let discount = 0;
+  if (data.voucherCode) {
+    const voucher = checkVoucher(data.voucherCode, subtotal);
+    if (!voucher.ok) return { ok: false, fieldErrors: { voucherCode: [voucher.message] } };
+    discount = voucher.voucher.amount;
+  }
+
   const order = await db.order.create({
     data: {
       code: generateOrderCode(),
@@ -90,8 +100,10 @@ export async function placeOrder(input: CheckoutInput): Promise<CheckoutResult> 
       address: data.address,
       note: data.note || null,
       subtotal,
+      voucherCode: discount > 0 ? data.voucherCode.toUpperCase() : null,
+      discount,
       shippingFee,
-      total: subtotal + shippingFee,
+      total: subtotal - discount + shippingFee,
       items: { create: lines },
     },
   });

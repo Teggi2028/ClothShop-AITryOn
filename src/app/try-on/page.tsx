@@ -23,6 +23,7 @@ export default async function TryOnPage({ searchParams }: PageProps<"/try-on">) 
           name: c.name,
           hex: c.hex,
           image: c.image,
+          photo: c.photo,
           torsoAsset: c.torsoAsset,
           sleeveUpperAsset: c.sleeveUpperAsset,
           sleeveLowerAsset: c.sleeveLowerAsset,

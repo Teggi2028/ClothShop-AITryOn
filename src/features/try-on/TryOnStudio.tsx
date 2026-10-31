@@ -32,6 +32,7 @@ export type TryOnProduct = {
     name: string;
     hex: string;
     image: string;
+    photo: string | null;
     torsoAsset: string;
     sleeveUpperAsset: string;
     sleeveLowerAsset: string | null;
@@ -305,7 +306,7 @@ export function TryOnStudio({
       colorName: color.name,
       size,
       price: product.price,
-      image: color.image,
+      image: color.photo ?? color.image,
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2200);
@@ -314,9 +315,9 @@ export function TryOnStudio({
   const live = mode === "camera" || mode === "photo";
 
   return (
-    <div className="grid bg-noir text-ivory lg:h-[calc(100vh-117px)] lg:grid-cols-[1fr_400px]">
+    <div className="grid border-t border-line lg:h-[calc(100vh-104px)] lg:grid-cols-[1fr_380px]">
       {/* ================= Khung camera ================= */}
-      <section className="relative flex min-h-[520px] items-center justify-center overflow-hidden bg-[#0b0b0b]">
+      <section className="relative flex min-h-[520px] items-center justify-center overflow-hidden bg-[#0b0b0b] text-white">
         <video ref={videoRef} className="hidden" playsInline muted />
         <canvas ref={canvasRef} className={`max-h-full max-w-full object-contain ${live ? "" : "hidden"}`} />
 
@@ -324,33 +325,33 @@ export function TryOnStudio({
           <div className="max-w-md px-8 text-center">
             {mode === "loading" ? (
               <>
-                <Loader2 className="mx-auto animate-spin text-gold" size={36} strokeWidth={1.2} />
-                <p className="mt-6 text-ivory/70">Đang khởi động camera và mô hình nhận diện…</p>
-                <p className="mt-2 text-xs text-ivory/40">Lần đầu có thể mất vài giây để tải mô hình (~5MB).</p>
+                <Loader2 className="mx-auto animate-spin text-white" size={36} strokeWidth={1.2} />
+                <p className="mt-6 text-white/70">Đang khởi động camera và mô hình nhận diện…</p>
+                <p className="mt-2 text-xs text-white/40">Lần đầu có thể mất vài giây để tải mô hình (~5MB).</p>
               </>
             ) : (
               <>
-                <p className="eyebrow text-gold">Phòng thử riêng</p>
-                <h1 className="mt-4 font-serif text-4xl leading-tight">Ngắm mình trong {product.name}</h1>
+                <p className="text-xs font-extrabold text-promo uppercase">Phòng thử riêng</p>
+                <h1 className="mt-4 text-3xl leading-tight font-extrabold">Ngắm mình trong {product.name}</h1>
                 {mode === "error" ? (
-                  <p className="mt-6 border border-danger/60 bg-danger/10 px-4 py-3 text-sm text-ivory/90" role="alert">
+                  <p className="mt-6 border border-sale/70 bg-sale/15 px-4 py-3 text-sm text-white/90" role="alert">
                     {error}
                   </p>
                 ) : (
-                  <p className="mt-6 flex items-start gap-3 text-left text-sm text-ivory/60">
-                    <ShieldCheck className="mt-0.5 shrink-0 text-gold" size={18} strokeWidth={1.4} />
+                  <p className="mt-6 flex items-start gap-3 text-left text-sm text-white/60">
+                    <ShieldCheck className="mt-0.5 shrink-0 text-promo" size={18} strokeWidth={1.4} />
                     Hình ảnh chỉ được xử lý ngay trên máy của bạn và không được gửi đi đâu.
                   </p>
                 )}
                 <div className="mt-10 flex flex-wrap justify-center gap-3">
-                  <button onClick={startCamera} className="btn btn-gold">
+                  <button onClick={startCamera} className="btn btn-accent">
                     <Camera size={16} strokeWidth={1.6} /> {mode === "error" ? "Thử lại" : "Bật camera"}
                   </button>
-                  <button onClick={() => fileInputRef.current?.click()} className="btn btn-outline text-ivory hover:!border-ivory hover:!bg-ivory hover:!text-noir">
+                  <button onClick={() => fileInputRef.current?.click()} className="btn border-white text-white hover:bg-white hover:text-ink">
                     <ImageUp size={16} strokeWidth={1.6} /> Tải ảnh lên
                   </button>
                 </div>
-                <p className="mt-8 text-xs text-ivory/40">Mẹo: ngồi thẳng, đủ sáng, lùi lại để camera thấy rõ hai vai và khuỷu tay.</p>
+                <p className="mt-8 text-xs text-white/40">Mẹo: ngồi thẳng, đủ sáng, lùi lại để camera thấy rõ hai vai và khuỷu tay.</p>
               </>
             )}
           </div>
@@ -370,8 +371,8 @@ export function TryOnStudio({
         {live && (
           <>
             {/* Trạng thái */}
-            <div className="absolute top-5 left-5 flex items-center gap-2 bg-noir/60 px-3 py-1.5 text-[11px] tracking-[0.14em] uppercase backdrop-blur">
-              <span className={`size-1.5 rounded-full ${tracking ? "animate-pulse bg-gold" : "bg-ivory/40"}`} />
+            <div className="absolute top-5 left-5 flex items-center gap-2 bg-black/60 px-3 py-1.5 text-[11px] tracking-[0.14em] uppercase backdrop-blur">
+              <span className={`size-1.5 rounded-full ${tracking ? "animate-pulse bg-[#4ade80]" : "bg-white/40"}`} />
               {tracking
                 ? mode === "camera"
                   ? "Đang thử trực tiếp"
@@ -382,18 +383,18 @@ export function TryOnStudio({
             </div>
             <div className="absolute top-5 right-5 flex gap-2">
               {mode === "photo" && (
-                <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 bg-noir/60 px-3 py-1.5 text-[11px] tracking-[0.14em] uppercase backdrop-blur hover:text-gold">
+                <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 bg-black/60 px-3 py-1.5 text-[11px] tracking-[0.14em] uppercase backdrop-blur hover:text-promo">
                   <ImageUp size={14} /> Ảnh khác
                 </button>
               )}
-              <button onClick={closeStudio} className="grid size-9 place-items-center bg-noir/60 backdrop-blur hover:text-gold" aria-label="Đóng phòng thử">
+              <button onClick={closeStudio} className="grid size-9 place-items-center bg-black/60 backdrop-blur hover:text-promo" aria-label="Đóng phòng thử">
                 <X size={18} strokeWidth={1.4} />
               </button>
             </div>
 
             {/* Khung hướng dẫn tư thế khi chưa nhận ra người */}
             {!tracking && mode === "camera" && (
-              <svg viewBox="0 0 200 200" className="pointer-events-none absolute h-[70%] text-ivory/50" fill="none" aria-hidden>
+              <svg viewBox="0 0 200 200" className="pointer-events-none absolute h-[70%] text-white/50" fill="none" aria-hidden>
                 <circle cx="100" cy="58" r="26" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" />
                 <path d="M30 200 C30 130 60 110 100 110 C140 110 170 130 170 200" stroke="currentColor" strokeWidth="1" strokeDasharray="4 4" />
               </svg>
@@ -401,50 +402,53 @@ export function TryOnStudio({
 
             <button
               onClick={capture}
-              className="absolute bottom-8 left-1/2 grid size-16 -translate-x-1/2 place-items-center rounded-full border-2 border-gold bg-noir/40 backdrop-blur transition hover:bg-gold/30"
+              className="absolute bottom-8 left-1/2 grid size-16 -translate-x-1/2 place-items-center rounded-full border-2 border-white bg-black/40 backdrop-blur transition hover:bg-white/20"
               aria-label="Chụp ảnh"
               title="Chụp ảnh"
             >
-              <span className="size-11 rounded-full bg-ivory" />
+              <span className="size-11 rounded-full bg-white" />
             </button>
           </>
         )}
       </section>
 
       {/* ================= Bảng điều khiển ================= */}
-      <aside className="overflow-y-auto border-l border-ivory/10 bg-[#171615] p-8">
-        <p className="eyebrow text-gold">Chọn thiết kế</p>
-        <div className="mt-4 grid grid-cols-5 gap-2">
-          {products.map((p) => (
+      <aside className="overflow-y-auto border-l border-line bg-white p-6">
+        <p className="font-bold uppercase">Chọn thiết kế</p>
+        <div className="mt-4 grid grid-cols-4 gap-2">
+          {products.map((p) => {
+            const thumb = p.colors.find((c) => c.key === colorKey) ?? p.colors[0];
+            return (
             <button
               key={p.slug}
               onClick={() => selectProduct(p.slug)}
-              className={`relative aspect-[4/5] bg-sand transition ${p.slug === product.slug ? "ring-2 ring-gold ring-offset-2 ring-offset-[#171615]" : "opacity-55 hover:opacity-100"}`}
+              className={`relative aspect-[37/48] overflow-hidden bg-surface transition ${p.slug === product.slug ? "ring-2 ring-accent ring-offset-2 ring-offset-white" : "opacity-55 hover:opacity-100"}`}
               title={p.name}
               aria-label={p.name}
               aria-pressed={p.slug === product.slug}
             >
-              <Image src={(p.colors.find((c) => c.key === colorKey) ?? p.colors[0]).image} alt="" fill unoptimized className="object-contain p-1" />
+              <Image src={thumb.photo ?? thumb.image} alt="" fill unoptimized className={thumb.photo ? "object-cover" : "object-contain p-1"} />
             </button>
-          ))}
+            );
+          })}
         </div>
 
-        <div className="mt-8 border-t border-ivory/10 pt-8">
-          <h2 className="font-serif text-3xl leading-tight">{product.name}</h2>
-          <p className="mt-2 font-serif text-xl text-gold">{formatPrice(product.price)}</p>
-          <Link href={`/product/${product.slug}`} className="link-underline mt-2 inline-block text-xs text-ivory/60">
+        <div className="mt-8 border-t border-line pt-8">
+          <h2 className="text-xl leading-snug font-bold">{product.name}</h2>
+          <p className="mt-1 text-lg font-extrabold text-sale">{formatPrice(product.price)}</p>
+          <Link href={`/product/${product.slug}`} className="mt-1 inline-block text-[13px] text-accent hover:underline">
             Xem chi tiết sản phẩm
           </Link>
 
-          <p className="mt-6 text-sm text-ivory/70">
-            Màu: <span className="text-ivory">{color.name}</span>
+          <p className="mt-6 text-sm text-muted">
+            Màu: <span className="text-ink">{color.name}</span>
           </p>
           <div className="mt-3 flex gap-3">
             {product.colors.map((c) => (
               <button
                 key={c.key}
                 onClick={() => setColorKey(c.key)}
-                className={`size-8 rounded-full border border-ivory/20 ring-offset-2 ring-offset-[#171615] ${c.key === color.key ? "ring-1 ring-gold" : ""}`}
+                className={`size-8 rounded-full border border-line ring-offset-2 ring-offset-white ${c.key === color.key ? "ring-2 ring-ink" : ""}`}
                 style={{ background: c.hex }}
                 aria-label={c.name}
                 aria-pressed={c.key === color.key}
@@ -452,9 +456,9 @@ export function TryOnStudio({
             ))}
           </div>
 
-          <div className="mt-6 flex items-center justify-between text-sm text-ivory/70">
+          <div className="mt-6 flex items-center justify-between text-sm text-muted">
             <span>Kích cỡ</span>
-            {sizeError && <span className="text-[#e48a83]">Vui lòng chọn kích cỡ</span>}
+            {sizeError && <span className="text-sale">Vui lòng chọn kích cỡ</span>}
           </div>
           <div className="mt-3 grid grid-cols-4 gap-2">
             {product.sizes.map((s) => (
@@ -464,7 +468,7 @@ export function TryOnStudio({
                   setSize(s);
                   setSizeError(false);
                 }}
-                className={`h-10 border text-sm transition ${s === size ? "border-gold bg-gold text-noir" : "border-ivory/20 hover:border-ivory/60"}`}
+                className={`h-10 rounded border text-sm transition ${s === size ? "border-ink bg-ink text-white" : "border-line hover:border-ink"}`}
                 aria-pressed={s === size}
               >
                 {s}
@@ -472,7 +476,7 @@ export function TryOnStudio({
             ))}
           </div>
 
-          <button onClick={handleAddToCart} className="btn btn-gold mt-6 w-full">
+          <button onClick={handleAddToCart} className="btn btn-primary mt-5 w-full uppercase">
             {added ? (
               <>
                 <Check size={16} /> Đã thêm vào giỏ
@@ -483,22 +487,22 @@ export function TryOnStudio({
           </button>
         </div>
 
-        <div className="mt-8 border-t border-ivory/10 pt-8">
-          <p className="eyebrow text-gold">Tinh chỉnh độ vừa</p>
-          <label className="mt-5 block text-sm text-ivory/70">
+        <div className="mt-8 border-t border-line pt-8">
+          <p className="font-bold uppercase">Tinh chỉnh độ vừa</p>
+          <label className="mt-5 block text-sm text-muted">
             <span className="flex justify-between">
-              Độ rộng <span className="text-ivory">{Math.round(scale * 100)}%</span>
+              Độ rộng <span className="text-ink">{Math.round(scale * 100)}%</span>
             </span>
-            <input type="range" min={0.8} max={1.3} step={0.01} value={scale} onChange={(e) => setScale(Number(e.target.value))} className="mt-2 w-full accent-[#b08d57]" />
+            <input type="range" min={0.8} max={1.3} step={0.01} value={scale} onChange={(e) => setScale(Number(e.target.value))} className="mt-2 w-full accent-[#1f6fc5]" />
           </label>
-          <label className="mt-4 block text-sm text-ivory/70">
+          <label className="mt-4 block text-sm text-muted">
             <span className="flex justify-between">
-              Vị trí lên / xuống <span className="text-ivory">{offset > 0 ? "+" : ""}{Math.round(offset * 100)}</span>
+              Vị trí lên / xuống <span className="text-ink">{offset > 0 ? "+" : ""}{Math.round(offset * 100)}</span>
             </span>
-            <input type="range" min={-0.3} max={0.3} step={0.01} value={offset} onChange={(e) => setOffset(Number(e.target.value))} className="mt-2 w-full accent-[#b08d57]" />
+            <input type="range" min={-0.3} max={0.3} step={0.01} value={offset} onChange={(e) => setOffset(Number(e.target.value))} className="mt-2 w-full accent-[#1f6fc5]" />
           </label>
-          <label className="mt-4 flex items-center gap-3 text-sm text-ivory/70">
-            <input type="checkbox" checked={showSkeleton} onChange={(e) => setShowSkeleton(e.target.checked)} className="size-4 accent-[#b08d57]" />
+          <label className="mt-4 flex items-center gap-3 text-sm text-muted">
+            <input type="checkbox" checked={showSkeleton} onChange={(e) => setShowSkeleton(e.target.checked)} className="size-4 accent-[#1f6fc5]" />
             Hiện khung xương nhận diện
           </label>
           {(scale !== 1 || offset !== 0) && (
@@ -507,7 +511,7 @@ export function TryOnStudio({
                 setScale(1);
                 setOffset(0);
               }}
-              className="link-underline mt-4 text-xs text-ivory/60"
+              className="mt-4 text-[13px] text-accent underline"
             >
               Đặt lại
             </button>
@@ -515,15 +519,15 @@ export function TryOnStudio({
         </div>
 
         {captures.length > 0 && (
-          <div className="mt-8 border-t border-ivory/10 pt-8">
-            <p className="eyebrow text-gold">Ảnh đã chụp</p>
-            <p className="mt-2 text-xs text-ivory/50">Bấm vào ảnh để tải về máy.</p>
+          <div className="mt-8 border-t border-line pt-8">
+            <p className="font-bold uppercase">Ảnh đã chụp</p>
+            <p className="mt-2 text-xs text-muted">Bấm vào ảnh để tải về máy.</p>
             <div className="mt-4 grid grid-cols-2 gap-2">
               {captures.map((c, i) => (
                 <a key={c.url} href={c.url} download={`aura-thu-do-${captures.length - i}.jpg`} className="group relative block" title={c.name}>
                   {/* eslint-disable-next-line @next/next/no-img-element -- ảnh blob tạm thời, next/image không cần thiết */}
                   <img src={c.url} alt={c.name} className="aspect-video w-full object-cover" />
-                  <span className="absolute inset-0 grid place-items-center bg-noir/60 opacity-0 transition group-hover:opacity-100">
+                  <span className="absolute inset-0 grid place-items-center bg-black/50 text-white opacity-0 transition group-hover:opacity-100">
                     <Download size={18} />
                   </span>
                 </a>

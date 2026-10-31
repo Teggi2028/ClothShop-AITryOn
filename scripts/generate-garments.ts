@@ -181,6 +181,8 @@ function sleeveLowerGroup(style: GarmentStyle, hex: string, id: string) {
       <circle cx="70" cy="276" r="3.4" fill="${d2}"/>`;
   if (style === "knit" || style === "turtleneck")
     cuff = `<rect x="16" y="246" width="68" height="54" fill="url(#${id}-rib)"/>`;
+  if (style === "tee" || style === "polo")
+    cuff = `<rect x="17" y="272" width="66" height="28" fill="url(#${id}-rib)"/>`;
   if (style === "blazer")
     cuff = [258, 272, 286].map((cy) => `<circle cx="74" cy="${cy}" r="3.4" fill="${d2}"/>`).join("");
   return `<clipPath id="${id}-sl"><path d="${path}"/></clipPath>

@@ -1,4 +1,4 @@
-# AURA Atelier — Website thời trang cao cấp có phòng thử bằng camera
+# AURA Fashion — Website thời trang nam có phòng thử bằng camera
 
 Đồ án: website bán áo, trong đó khách có thể **bật webcam trên laptop và thấy mình "mặc" chiếc áo** ngay trên màn hình.
 Nhận diện dáng người chạy **ngay trên trình duyệt** (MediaPipe Pose), không gửi hình ảnh đi đâu và hoàn toàn miễn phí.
@@ -12,7 +12,7 @@ Yêu cầu: **Node.js 20 trở lên** (kiểm tra bằng `node -v`).
 
 ```bash
 npm install          # tải thư viện (chỉ cần chạy lần đầu)
-npm run db:setup     # tạo database SQLite + đổ 10 sản phẩm mẫu
+npm run db:setup     # tạo database SQLite + đổ 16 sản phẩm mẫu
 npm run dev          # chạy website ở chế độ phát triển
 ```
 

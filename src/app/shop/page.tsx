@@ -1,70 +1,158 @@
+import { Check, X } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { ProductCard } from "@/components/ProductCard";
-import { SORT_OPTIONS, getCategories, getProducts, type SortKey } from "@/lib/products";
+import { VoucherCards } from "@/components/VoucherList";
+import {
+  PRICE_RANGES,
+  SORT_OPTIONS,
+  type PriceRangeKey,
+  type SortKey,
+  getCategories,
+  getColorOptions,
+  getProducts,
+} from "@/lib/products";
+import { SortSelect } from "./SortSelect";
 
-export const metadata: Metadata = { title: "Cửa hàng" };
+export const metadata: Metadata = { title: "Áo nam" };
+
+type Query = { category?: string; color?: string; price?: string; sort?: string; q?: string };
 
 export default async function ShopPage({ searchParams }: PageProps<"/shop">) {
-  const params = await searchParams;
-  const category = typeof params.category === "string" ? params.category : undefined;
-  const sort = (typeof params.sort === "string" && params.sort in SORT_OPTIONS ? params.sort : "newest") as SortKey;
+  const raw = await searchParams;
+  const one = (v: string | string[] | undefined) => (typeof v === "string" && v ? v : undefined);
+  const query: Query = { category: one(raw.category), color: one(raw.color), price: one(raw.price), sort: one(raw.sort), q: one(raw.q) };
 
-  const [categories, products] = await Promise.all([getCategories(), getProducts({ category, sort })]);
-  const current = categories.find((c) => c.slug === category);
+  const sort = (query.sort && query.sort in SORT_OPTIONS ? query.sort : "newest") as SortKey;
+  const price = query.price && query.price in PRICE_RANGES ? (query.price as PriceRangeKey) : undefined;
+  const colors = query.color?.split(",").filter(Boolean) ?? [];
 
-  // Tạo link giữ nguyên bộ lọc hiện tại, chỉ đổi 1 tham số
-  const href = (next: { category?: string | null; sort?: string }) => {
-    const q = new URLSearchParams();
-    const cat = next.category === null ? undefined : (next.category ?? category);
-    if (cat) q.set("category", cat);
-    const s = next.sort ?? sort;
-    if (s !== "newest") q.set("sort", s);
-    const qs = q.toString();
-    return qs ? `/shop?${qs}` : "/shop";
+  const [categories, colorOptions, products] = await Promise.all([
+    getCategories(),
+    getColorOptions(),
+    getProducts({ category: query.category, colors, price, q: query.q, sort }),
+  ]);
+  const current = categories.find((c) => c.slug === query.category);
+
+  // Tạo link giữ nguyên các bộ lọc khác, chỉ đổi những gì truyền vào (undefined = bỏ lọc)
+  const href = (patch: Partial<Query>) => {
+    const next = { ...query, ...patch };
+    const qs = new URLSearchParams();
+    for (const [k, v] of Object.entries(next)) if (v && !(k === "sort" && v === "newest")) qs.set(k, v);
+    const s = qs.toString();
+    return s ? `/shop?${s}` : "/shop";
   };
+  const toggleColor = (key: string) => {
+    const set = new Set(colors);
+    if (set.has(key)) set.delete(key);
+    else set.add(key);
+    return href({ color: [...set].join(",") || undefined });
+  };
+  const hasFilter = Boolean(query.category || colors.length || price || query.q);
 
-  const chip = (active: boolean) =>
-    `eyebrow border px-4 py-2.5 transition-colors ${active ? "border-noir bg-noir text-ivory" : "border-line hover:border-noir"}`;
+  const title = query.q ? `Kết quả cho “${query.q}”` : (current?.name ?? "Áo nam");
 
   return (
-    <div className="container-lux pt-16">
-      <header className="text-center">
-        <p className="eyebrow text-gold-deep">Cửa hàng</p>
-        <h1 className="mt-3 font-serif text-5xl font-medium">{current?.name ?? "Tất cả thiết kế"}</h1>
-      </header>
+    <div className="container-shop">
+      <Breadcrumb items={current ? [{ label: "Áo nam", href: "/shop" }, { label: current.name }] : [{ label: "Áo nam" }]} />
 
-      <div className="mt-12 flex flex-col gap-6 border-y border-line py-5 lg:flex-row lg:items-center lg:justify-between">
-        <nav className="flex flex-wrap gap-2" aria-label="Lọc theo danh mục">
-          <Link href={href({ category: null })} className={chip(!category)}>
-            Tất cả
-          </Link>
-          {categories.map((c) => (
-            <Link key={c.id} href={href({ category: c.slug })} className={chip(c.slug === category)}>
-              {c.name}
-            </Link>
-          ))}
-        </nav>
-        <div className="flex items-center gap-5 text-sm">
-          <span className="text-stone">{products.length} sản phẩm</span>
-          <span className="h-4 w-px bg-line" />
-          {Object.entries(SORT_OPTIONS).map(([key, opt]) => (
-            <Link key={key} href={href({ sort: key })} className={key === sort ? "font-medium text-noir underline underline-offset-4" : "text-stone hover:text-noir"}>
-              {opt.label}
-            </Link>
-          ))}
-        </div>
+      <div className="mt-6">
+        <VoucherCards />
       </div>
 
-      {products.length === 0 ? (
-        <p className="py-24 text-center text-stone">Chưa có sản phẩm trong danh mục này.</p>
-      ) : (
-        <div className="mt-12 grid grid-cols-2 gap-x-6 gap-y-14 md:grid-cols-3 xl:grid-cols-4">
-          {products.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
+      <div className="mt-10 flex flex-wrap items-center justify-between gap-4">
+        <h1 className="section-title">{title}</h1>
+        <SortSelect
+          value={sort}
+          options={Object.entries(SORT_OPTIONS).map(([value, o]) => ({ value, label: o.label, href: href({ sort: value }) }))}
+        />
+      </div>
+
+      <div className="mt-6 grid gap-10 lg:grid-cols-[220px_1fr]">
+        {/* ===== Bộ lọc ===== */}
+        <aside className="space-y-8 text-sm">
+          {hasFilter && (
+            <Link href={query.q ? `/shop?q=${encodeURIComponent(query.q)}` : "/shop"} className="flex items-center gap-1 text-sale hover:underline">
+              <X size={14} /> Xoá bộ lọc
+            </Link>
+          )}
+
+          <div>
+            <h2 className="font-bold uppercase">Danh mục</h2>
+            <ul className="mt-3 space-y-2">
+              {categories.map((c) => {
+                const active = c.slug === query.category;
+                return (
+                  <li key={c.id}>
+                    <Link href={href({ category: active ? undefined : c.slug })} className="flex items-center gap-2 hover:text-accent">
+                      <span className={`grid size-4 place-items-center rounded-sm border ${active ? "border-ink bg-ink text-white" : "border-subtle"}`}>
+                        {active && <Check size={12} strokeWidth={3} />}
+                      </span>
+                      {c.name}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+
+          <div>
+            <h2 className="font-bold uppercase">Màu sắc</h2>
+            <ul className="mt-3 space-y-2">
+              {colorOptions.map((c) => {
+                const active = colors.includes(c.key);
+                return (
+                  <li key={c.key}>
+                    <Link href={toggleColor(c.key)} className={`flex items-center gap-2 hover:text-accent ${active ? "font-bold" : ""}`}>
+                      <span className={`size-4 rounded-full border ${active ? "ring-2 ring-ink ring-offset-1" : "border-line"}`} style={{ background: c.hex }} />
+                      {c.name}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+
+          <div>
+            <h2 className="font-bold uppercase">Khoảng giá</h2>
+            <ul className="mt-3 space-y-2">
+              {Object.entries(PRICE_RANGES).map(([key, r]) => {
+                const active = key === price;
+                return (
+                  <li key={key}>
+                    <Link href={href({ price: active ? undefined : key })} className="flex items-center gap-2 hover:text-accent">
+                      <span className={`grid size-4 place-items-center rounded-full border ${active ? "border-ink" : "border-subtle"}`}>
+                        {active && <span className="size-2 rounded-full bg-ink" />}
+                      </span>
+                      {r.label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </aside>
+
+        {/* ===== Lưới sản phẩm ===== */}
+        <div>
+          <p className="mb-4 text-sm text-muted">{products.length} sản phẩm</p>
+          {products.length === 0 ? (
+            <div className="rounded-md bg-surface py-20 text-center text-muted">
+              Không tìm thấy sản phẩm phù hợp.{" "}
+              <Link href="/shop" className="text-accent hover:underline">
+                Xem tất cả
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-x-5 gap-y-10 md:grid-cols-3 xl:grid-cols-4">
+              {products.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

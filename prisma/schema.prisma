@@ -47,7 +47,8 @@ model ProductColor {
   key         String // vd: "noir", "ivory" — dùng trong URL
   name        String // tên hiển thị: "Đen tuyền"
   hex         String
-  image       String // ảnh hiển thị trong cửa hàng
+  image       String // hình minh hoạ (SVG) — luôn có
+  photo       String? // ảnh chụp thật (nếu có) — ưu tiên hiển thị
   // --- Ảnh nền trong suốt dùng để "mặc" lên người trong phòng thử ---
   torsoAsset       String // thân áo
   sleeveUpperAsset String // tay áo: đoạn vai → khuỷu tay
@@ -69,6 +70,8 @@ model Order {
   note          String?
   paymentMethod String      @default("COD")
   subtotal      Int
+  voucherCode   String? // mã giảm giá đã dùng
+  discount      Int         @default(0)
   shippingFee   Int
   total         Int
   status        String      @default("PENDING") // PENDING | CONFIRMED | SHIPPING | DONE | CANCELLED

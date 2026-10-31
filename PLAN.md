@@ -194,9 +194,11 @@ ClothShop-AITryOn/
 - [x] Lưu đơn vào DB, trang "Đặt hàng thành công"
 - **Cần học:** React Context hoặc **Zustand** (quản lý trạng thái giỏ hàng), Server Actions / Route Handlers
 
-### Giai đoạn 6 — ~~Thử đồ AI (Cách B)~~ → bỏ, thay bằng: Ảnh thật
-- [ ] Nhận ảnh sản phẩm thật, tách nền, cắt thành thân áo / tay áo theo quy ước mục 4.3
-- [ ] Cho phép mỗi màu dùng ảnh PNG thay cho SVG
+### Giai đoạn 6 — ~~Thử đồ AI (Cách B)~~ → bỏ, thay bằng: Ảnh thật & giao diện bán lẻ
+- [x] Đổi giao diện sang phong cách bán lẻ (header tìm kiếm, voucher, bộ lọc màu/giá, trang chi tiết kiểu khuyến mãi)
+- [x] Mã giảm giá AURA30K/50K/100K/200K (kiểm tra ở cả trình duyệt và server)
+- [x] Ảnh thật cho 6 sản phẩm (`public/products/`)
+- [ ] Nhận ảnh **toàn thân áo chính diện**, tách nền, cắt thành thân áo / tay áo theo quy ước mục 4.3 để phòng thử dùng ảnh thật
 
 ### Giai đoạn 7 — Trang quản trị (Admin) (≈ 3–4 buổi)
 - [ ] Đăng nhập admin (Auth.js)
@@ -231,9 +233,9 @@ ClothShop-AITryOn/
 
 ## 11. ✅ Quyết định đã chốt (31/10/2026)
 1. **Mục đích:** đồ án (không kinh doanh thật) → thanh toán COD, chưa cần cổng thanh toán.
-2. **Phong cách:** sang trọng — đen / trắng ngà / vàng champagne, tiêu đề serif (xem BRAND.md). Tên tạm: **AURA Atelier**.
+2. **Phong cách:** ~~sang trọng~~ → **bán lẻ thời trang nam hiện đại** (tham khảo bố cục savani.vn: nền trắng, giá đỏ, voucher, bộ lọc). Tên tạm: **AURA Fashion** (xem BRAND.md v0.3).
 3. **Sản phẩm:** chỉ **áo** (sơ mi, thun, polo, áo len, blazer).
-4. **Ảnh:** chưa có → dùng hình minh hoạ SVG; khi cần ảnh thật sẽ nhờ bạn gửi.
+4. **Ảnh:** đã có 6 ảnh thật (ảnh cận cổ áo) → dùng làm ảnh cửa hàng; phòng thử vẫn dùng hình minh hoạ SVG cho tới khi có ảnh **toàn thân áo, chính diện**.
 5. **Thử đồ:** miễn phí cho người dùng → chỉ dùng AR 2D (Cách A).
 6. **Khách dùng laptop** (webcam), chưa làm app di động.
 7. Bạn nhờ code trực tiếp (không chỉ hướng dẫn).

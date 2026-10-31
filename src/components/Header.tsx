@@ -1,48 +1,48 @@
-import { Camera } from "lucide-react";
+import { Camera, Search } from "lucide-react";
 import Link from "next/link";
-import { SHIPPING } from "@/lib/brand";
-import { formatPrice } from "@/lib/format";
 import { CartLink } from "./CartLink";
 import { Logo } from "./Logo";
 
 const NAV = [
-  { href: "/shop", label: "Tất cả" },
+  { href: "/", label: "Trang chủ" },
+  { href: "/shop?sort=newest", label: "Hàng mới về" },
   { href: "/shop?category=so-mi", label: "Sơ mi" },
-  { href: "/shop?category=ao-len", label: "Áo len" },
-  { href: "/shop?category=blazer", label: "Blazer" },
+  { href: "/shop?category=polo", label: "Polo" },
+  { href: "/shop?category=thun", label: "Áo thun" },
+  { href: "/shop?category=ao-len", label: "Áo len & nỉ" },
+  { href: "/shop?category=ao-khoac", label: "Áo khoác" },
 ];
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-40">
-      <div className="bg-noir py-2 text-center text-[11px] tracking-[0.18em] text-ivory/80 uppercase">
-        Miễn phí giao hàng cho đơn từ {formatPrice(SHIPPING.freeFrom)}
-        <span className="mx-3 text-gold">◆</span>
-        Thử đồ trực tuyến bằng camera
+    <header className="sticky top-0 z-40 bg-white shadow-[0_1px_0_var(--color-line)]">
+      <div className="bg-topbar px-4 py-2 text-center text-[13px] font-semibold text-white uppercase">
+        Miễn phí giao hàng cho đơn từ 500K · Nhập mã AURA30K giảm 30K · Thử đồ bằng camera ngay trên web
       </div>
-      <div className="border-b border-line bg-ivory/95 backdrop-blur">
-        <div className="container-lux grid h-20 grid-cols-[1fr_auto_1fr] items-center">
-          <nav className="flex gap-8 text-[12px] font-medium tracking-[0.16em] uppercase" aria-label="Danh mục">
-            {NAV.map((item) => (
-              <Link key={item.href} href={item.href} className="hidden transition-colors hover:text-gold-deep md:block">
-                {item.label}
-              </Link>
-            ))}
-            <Link href="/shop" className="md:hidden">
-              Cửa hàng
+      <div className="container-shop flex h-[68px] items-center gap-8">
+        <Logo className="shrink-0" />
+        <nav className="hidden flex-1 items-center gap-6 text-[15px] lg:flex" aria-label="Danh mục">
+          {NAV.map((item) => (
+            <Link key={item.href} href={item.href} className="whitespace-nowrap hover:text-accent">
+              {item.label}
             </Link>
-          </nav>
-          <Logo />
-          <div className="flex items-center justify-end gap-8">
-            <Link
-              href="/try-on"
-              className="hidden items-center gap-2 text-[12px] font-medium tracking-[0.16em] text-gold-deep uppercase transition-colors hover:text-noir sm:flex"
-            >
-              <Camera size={18} strokeWidth={1.4} />
-              Phòng thử
-            </Link>
-            <CartLink />
-          </div>
+          ))}
+          <Link href="/try-on" className="flex items-center gap-1.5 font-bold whitespace-nowrap text-accent hover:underline">
+            <Camera size={17} /> Phòng thử
+          </Link>
+        </nav>
+        <div className="ml-auto flex items-center gap-5">
+          {/* Tìm kiếm: form GET bình thường → chuyển tới /shop?q=... (không cần JavaScript) */}
+          <form action="/shop" className="relative hidden md:block" role="search">
+            <input name="q" type="search" placeholder="Tìm sản phẩm..." className="input h-10 w-56 rounded-full pr-10 text-sm" aria-label="Tìm sản phẩm" />
+            <button type="submit" className="absolute top-1/2 right-3 -translate-y-1/2 text-muted hover:text-ink" aria-label="Tìm">
+              <Search size={18} />
+            </button>
+          </form>
+          <Link href="/try-on" className="text-accent lg:hidden" aria-label="Phòng thử">
+            <Camera size={22} />
+          </Link>
+          <CartLink />
         </div>
       </div>
     </header>

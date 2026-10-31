@@ -1,6 +1,6 @@
 "use client";
 
-import { Minus, Plus, X } from "lucide-react";
+import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { OrderSummary } from "@/components/OrderSummary";
@@ -11,13 +11,14 @@ export function CartView() {
   const { items, setQuantity, remove } = useCart();
   const hydrated = useHydrated();
 
-  if (!hydrated) return <p className="py-24 text-center text-sm text-stone">Đang tải giỏ hàng…</p>;
+  if (!hydrated) return <p className="py-24 text-center text-sm text-muted">Đang tải giỏ hàng…</p>;
 
   if (items.length === 0) {
     return (
-      <div className="py-24 text-center">
-        <p className="text-stone">Giỏ hàng của bạn đang trống.</p>
-        <Link href="/shop" className="btn btn-primary mt-8">
+      <div className="py-20 text-center">
+        <ShoppingBag className="mx-auto text-line" size={64} strokeWidth={1} />
+        <p className="mt-4 text-muted">Giỏ hàng của bạn đang trống.</p>
+        <Link href="/shop" className="btn btn-primary mt-6">
           Tiếp tục mua sắm
         </Link>
       </div>
@@ -25,47 +26,47 @@ export function CartView() {
   }
 
   return (
-    <div className="mt-14 grid gap-12 lg:grid-cols-[1fr_400px]">
-      <ul className="divide-y divide-line border-y border-line">
+    <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_380px]">
+      <ul className="divide-y divide-line rounded-md border border-line px-5">
         {items.map((item) => (
-          <li key={item.key} className="grid grid-cols-[110px_1fr_auto] gap-6 py-6">
-            <Link href={`/product/${item.slug}`} className="relative aspect-[4/5] bg-sand">
-              <Image src={item.image} alt={item.name} fill unoptimized className="object-contain p-3" />
+          <li key={item.key} className="grid grid-cols-[90px_1fr_auto] gap-4 py-5">
+            <Link href={`/product/${item.slug}`} className="relative aspect-[37/48] overflow-hidden bg-surface">
+              <Image src={item.image} alt={item.name} fill unoptimized className={item.image.endsWith(".svg") ? "object-contain p-2" : "object-cover"} />
             </Link>
             <div>
-              <Link href={`/product/${item.slug}`} className="font-serif text-xl hover:text-gold-deep">
+              <Link href={`/product/${item.slug}`} className="font-semibold hover:text-accent">
                 {item.name}
               </Link>
-              <p className="mt-1 text-sm text-stone">
-                {item.colorName} · Size {item.size}
+              <p className="mt-1 text-[13px] text-muted">
+                {item.colorName} / {item.size}
               </p>
-              <p className="mt-2 text-sm">{formatPrice(item.price)}</p>
-              <div className="mt-4 flex h-10 w-fit items-center border border-line">
-                <button className="grid h-full w-10 place-items-center disabled:opacity-30" onClick={() => setQuantity(item.key, item.quantity - 1)} disabled={item.quantity <= 1} aria-label="Giảm số lượng">
+              <p className="mt-1 font-bold text-sale">{formatPrice(item.price)}</p>
+              <div className="mt-3 flex h-9 w-fit items-center rounded border border-line">
+                <button className="grid h-full w-9 place-items-center disabled:opacity-30" onClick={() => setQuantity(item.key, item.quantity - 1)} disabled={item.quantity <= 1} aria-label="Giảm số lượng">
                   <Minus size={13} />
                 </button>
                 <span className="w-8 text-center text-sm">{item.quantity}</span>
-                <button className="grid h-full w-10 place-items-center disabled:opacity-30" onClick={() => setQuantity(item.key, item.quantity + 1)} disabled={item.quantity >= MAX_QUANTITY} aria-label="Tăng số lượng">
+                <button className="grid h-full w-9 place-items-center disabled:opacity-30" onClick={() => setQuantity(item.key, item.quantity + 1)} disabled={item.quantity >= MAX_QUANTITY} aria-label="Tăng số lượng">
                   <Plus size={13} />
                 </button>
               </div>
             </div>
             <div className="flex flex-col items-end justify-between">
-              <button onClick={() => remove(item.key)} className="text-stone hover:text-danger" aria-label={`Xoá ${item.name}`}>
-                <X size={18} strokeWidth={1.4} />
+              <button onClick={() => remove(item.key)} className="text-subtle hover:text-sale" aria-label={`Xoá ${item.name}`}>
+                <Trash2 size={18} />
               </button>
-              <p className="font-serif text-lg">{formatPrice(item.price * item.quantity)}</p>
+              <p className="font-bold">{formatPrice(item.price * item.quantity)}</p>
             </div>
           </li>
         ))}
       </ul>
 
-      <div className="lg:sticky lg:top-36 lg:self-start">
+      <div className="lg:sticky lg:top-32 lg:self-start">
         <OrderSummary subtotal={cartSubtotal(items)}>
-          <Link href="/checkout" className="btn btn-primary mt-8 w-full">
+          <Link href="/checkout" className="btn btn-primary mt-6 w-full uppercase">
             Tiến hành đặt hàng
           </Link>
-          <Link href="/shop" className="link-underline mx-auto mt-5 block w-fit text-xs text-stone">
+          <Link href="/shop" className="mt-4 block text-center text-sm text-accent hover:underline">
             Tiếp tục mua sắm
           </Link>
         </OrderSummary>

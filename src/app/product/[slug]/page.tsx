@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { ProductCard } from "@/components/ProductCard";
+import { productSku } from "@/lib/format";
 import { getProductBySlug, getRelatedProducts } from "@/lib/products";
 import { ProductPurchase } from "./ProductPurchase";
 
@@ -16,33 +17,34 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
   const related = await getRelatedProducts(product.id, product.categoryId);
 
   return (
-    <div className="container-lux pt-10">
-      <nav className="text-xs text-stone" aria-label="Breadcrumb">
-        <Link href="/" className="hover:text-noir">Trang chủ</Link>
-        <span className="mx-2">/</span>
-        <Link href={`/shop?category=${product.category.slug}`} className="hover:text-noir">{product.category.name}</Link>
-        <span className="mx-2">/</span>
-        <span className="text-noir">{product.name}</span>
-      </nav>
+    <div className="container-shop">
+      <Breadcrumb
+        items={[
+          { label: product.category.name, href: `/shop?category=${product.category.slug}` },
+          { label: product.name },
+        ]}
+      />
 
       <ProductPurchase
         product={{
           id: product.id,
+          sku: productSku(product.id),
           slug: product.slug,
           name: product.name,
-          categoryName: product.category.name,
           description: product.description,
           material: product.material,
+          sleeve: product.sleeve,
           price: product.price,
           compareAtPrice: product.compareAtPrice,
+          isNew: product.isNew,
           sizes: product.sizes.split(","),
-          colors: product.colors.map((c) => ({ key: c.key, name: c.name, hex: c.hex, image: c.image })),
+          colors: product.colors.map((c) => ({ key: c.key, name: c.name, hex: c.hex, image: c.image, photo: c.photo })),
         }}
       />
 
-      <section className="pt-32">
-        <h2 className="font-serif text-3xl font-medium">Có thể bạn cũng thích</h2>
-        <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-3 xl:grid-cols-4">
+      <section className="mt-16">
+        <h2 className="section-title uppercase">Sản phẩm liên quan</h2>
+        <div className="mt-6 grid grid-cols-2 gap-x-5 gap-y-10 md:grid-cols-3 lg:grid-cols-4">
           {related.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}

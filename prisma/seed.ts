@@ -39,6 +39,7 @@ async function main() {
             name: COLORS[key].name,
             hex: COLORS[key].hex,
             position,
+            photo: p.photos?.[key] ?? null,
             ...garmentPaths(p.slug, key, p.sleeve),
           })),
         },

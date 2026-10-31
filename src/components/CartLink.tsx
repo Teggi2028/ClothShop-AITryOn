@@ -10,13 +10,11 @@ export function CartLink() {
   const count = hydrated ? cartCount(items) : 0;
 
   return (
-    <Link href="/cart" className="relative flex items-center gap-2" aria-label={`Giỏ hàng (${count} sản phẩm)`}>
-      <ShoppingBag size={20} strokeWidth={1.4} />
-      {count > 0 && (
-        <span className="absolute -right-2.5 -top-2 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-gold px-1 text-[10px] font-medium text-noir">
-          {count}
-        </span>
-      )}
+    <Link href="/cart" className="relative flex items-center" aria-label={`Giỏ hàng (${count} sản phẩm)`}>
+      <ShoppingBag size={22} />
+      <span className="absolute -top-1.5 -right-2 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-sale px-1 text-[10px] font-bold text-white">
+        {count}
+      </span>
     </Link>
   );
 }

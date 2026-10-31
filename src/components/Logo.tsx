@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { BRAND } from "@/lib/brand";
 
-export function Logo({ className = "" }: { className?: string }) {
+export function Logo({ className = "", light = false }: { className?: string; light?: boolean }) {
   return (
-    <Link href="/" className={`flex flex-col items-center leading-none ${className}`} aria-label={BRAND.fullName}>
-      <span className="font-serif text-[28px] font-semibold tracking-[0.3em] pl-[0.3em]">{BRAND.name}</span>
-      <span className="mt-1 text-[9px] font-medium uppercase tracking-[0.5em] pl-[0.5em]">{BRAND.subName}</span>
+    <Link href="/" className={`flex flex-col items-center leading-none ${light ? "text-white" : "text-ink"} ${className}`} aria-label={BRAND.fullName}>
+      <span className="text-[26px] font-extrabold tracking-[0.18em]">{BRAND.name}</span>
+      <span className="mt-0.5 text-[9px] font-bold uppercase tracking-[0.42em]">{BRAND.subName}</span>
     </Link>
   );
 }

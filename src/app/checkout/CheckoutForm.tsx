@@ -1,16 +1,17 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { Loader2, Ticket } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { OrderSummary } from "@/components/OrderSummary";
 import { formatPrice } from "@/lib/format";
+import { checkVoucher } from "@/lib/vouchers";
 import { cartSubtotal, useCart, useHydrated } from "@/stores/cart";
 import { type CheckoutField, type CheckoutResult, placeOrder } from "./actions";
 
-const FIELDS: { name: CheckoutField; label: string; type?: string; autoComplete?: string; textarea?: boolean; optional?: boolean }[] = [
+const FIELDS: { name: Exclude<CheckoutField, "voucherCode">; label: string; type?: string; autoComplete?: string; textarea?: boolean; optional?: boolean }[] = [
   { name: "customerName", label: "Họ và tên", autoComplete: "name" },
   { name: "phone", label: "Số điện thoại", type: "tel", autoComplete: "tel" },
   { name: "email", label: "Email", type: "email", autoComplete: "email", optional: true },
@@ -24,19 +25,27 @@ export function CheckoutForm() {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [result, setResult] = useState<Extract<CheckoutResult, { ok: false }> | null>(null);
+  const [voucherInput, setVoucherInput] = useState("");
+  const [appliedCode, setAppliedCode] = useState<string | null>(null);
 
-  if (!hydrated) return <p className="py-24 text-center text-sm text-stone">Đang tải…</p>;
+  if (!hydrated) return <p className="py-24 text-center text-sm text-muted">Đang tải…</p>;
 
   if (items.length === 0) {
     return (
-      <div className="py-24 text-center">
-        <p className="text-stone">Giỏ hàng đang trống nên chưa thể đặt hàng.</p>
-        <Link href="/shop" className="btn btn-primary mt-8">
+      <div className="py-20 text-center">
+        <p className="text-muted">Giỏ hàng đang trống nên chưa thể đặt hàng.</p>
+        <Link href="/shop" className="btn btn-primary mt-6">
           Đến cửa hàng
         </Link>
       </div>
     );
   }
+
+  const subtotal = cartSubtotal(items);
+  // Kiểm tra lại mã mỗi lần vẽ: nếu khách giảm số lượng làm đơn không đủ điều kiện thì mã tự mất hiệu lực
+  const voucher = appliedCode ? checkVoucher(appliedCode, subtotal) : null;
+  const discount = voucher?.ok ? voucher.voucher.amount : 0;
+  const voucherError = voucher && !voucher.ok ? voucher.message : result?.fieldErrors?.voucherCode?.[0];
 
   // Dùng onSubmit thay cho <form action>: React tự xoá trắng form sau action,
   // khiến khách mất dữ liệu đã nhập khi có lỗi.
@@ -50,6 +59,7 @@ export function CheckoutForm() {
         email: String(formData.get("email") ?? ""),
         address: String(formData.get("address") ?? ""),
         note: String(formData.get("note") ?? ""),
+        voucherCode: voucher?.ok ? voucher.voucher.code : "",
         items: items.map((i) => ({ productId: i.productId, colorKey: i.colorKey, size: i.size, quantity: i.quantity })),
       });
       if (res.ok) {
@@ -62,10 +72,10 @@ export function CheckoutForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-14 grid gap-12 lg:grid-cols-[1fr_420px]" noValidate>
-      <div>
-        <p className="eyebrow">Thông tin giao hàng</p>
-        <div className="mt-6 grid gap-6">
+    <form onSubmit={handleSubmit} className="mt-6 grid gap-8 lg:grid-cols-[1fr_400px]" noValidate>
+      <div className="rounded-md border border-line p-6">
+        <h2 className="font-bold uppercase">Thông tin giao hàng</h2>
+        <div className="mt-5 grid gap-5 sm:grid-cols-2">
           {FIELDS.map((f) => {
             const error = result?.fieldErrors?.[f.name]?.[0];
             const common = {
@@ -76,18 +86,18 @@ export function CheckoutForm() {
               "aria-describedby": error ? `${f.name}-error` : undefined,
             };
             return (
-              <div key={f.name}>
-                <label htmlFor={f.name} className="text-xs tracking-[0.12em] text-stone uppercase">
+              <div key={f.name} className={f.name === "address" || f.textarea ? "sm:col-span-2" : ""}>
+                <label htmlFor={f.name} className="mb-1.5 block text-sm font-semibold">
                   {f.label}
-                  {f.optional && <span className="normal-case tracking-normal"> (không bắt buộc)</span>}
+                  {f.optional ? <span className="font-normal text-subtle"> (không bắt buộc)</span> : <span className="text-sale"> *</span>}
                 </label>
                 {f.textarea ? (
-                  <textarea {...common} rows={3} className="input-line h-auto resize-none py-3" />
+                  <textarea {...common} rows={3} className="input h-auto resize-none py-2.5" />
                 ) : (
-                  <input {...common} type={f.type ?? "text"} className="input-line" />
+                  <input {...common} type={f.type ?? "text"} className="input" />
                 )}
                 {error && (
-                  <p id={`${f.name}-error`} className="mt-2 text-sm text-danger">
+                  <p id={`${f.name}-error`} className="mt-1.5 text-[13px] text-sale">
                     {error}
                   </p>
                 )}
@@ -96,41 +106,68 @@ export function CheckoutForm() {
           })}
         </div>
 
-        <p className="eyebrow mt-12">Phương thức thanh toán</p>
-        <label className="mt-5 flex items-center gap-4 border border-noir bg-pearl p-5">
-          <input type="radio" name="payment" defaultChecked className="size-4 accent-[#121212]" />
+        <h2 className="mt-8 font-bold uppercase">Phương thức thanh toán</h2>
+        <label className="mt-3 flex items-center gap-3 rounded-md border border-accent bg-accent-soft p-4">
+          <input type="radio" name="payment" defaultChecked className="size-4 accent-[#1f6fc5]" />
           <span>
-            <span className="block text-sm font-medium">Thanh toán khi nhận hàng (COD)</span>
-            <span className="text-xs text-stone">Bạn được kiểm tra hàng trước khi thanh toán.</span>
+            <span className="block font-semibold">Thanh toán khi nhận hàng (COD)</span>
+            <span className="text-[13px] text-muted">Bạn được kiểm tra hàng trước khi thanh toán.</span>
           </span>
         </label>
       </div>
 
-      <div className="lg:sticky lg:top-36 lg:self-start">
-        <OrderSummary subtotal={cartSubtotal(items)}>
-          <ul className="mt-6 space-y-4 border-t border-line pt-6">
+      <div className="space-y-4 lg:sticky lg:top-32 lg:self-start">
+        <div className="rounded-md border border-line p-6">
+          <h2 className="flex items-center gap-2 font-bold uppercase">
+            <Ticket size={18} className="text-sale" /> Mã giảm giá
+          </h2>
+          <div className="mt-3 flex gap-2">
+            <input
+              value={voucherInput}
+              onChange={(e) => setVoucherInput(e.target.value.toUpperCase())}
+              placeholder="Nhập mã, vd: AURA30K"
+              className="input h-10 flex-1 uppercase"
+              aria-label="Mã giảm giá"
+            />
+            <button type="button" onClick={() => setAppliedCode(voucherInput.trim() || null)} className="btn btn-outline h-10 px-4">
+              Áp dụng
+            </button>
+          </div>
+          {voucherError && <p className="mt-2 text-[13px] text-sale">{voucherError}</p>}
+          {voucher?.ok && (
+            <p className="mt-2 flex items-center justify-between text-[13px] text-success">
+              Đã áp dụng mã {voucher.voucher.code}
+              <button type="button" onClick={() => setAppliedCode(null)} className="text-muted underline">
+                Bỏ mã
+              </button>
+            </p>
+          )}
+        </div>
+
+        <OrderSummary subtotal={subtotal} discount={discount}>
+          <ul className="mt-5 space-y-3 border-t border-line pt-5">
             {items.map((i) => (
-              <li key={i.key} className="flex gap-4 text-sm">
-                <span className="relative block aspect-[4/5] w-14 shrink-0 bg-sand">
-                  <Image src={i.image} alt="" fill unoptimized className="object-contain p-1" />
+              <li key={i.key} className="flex gap-3 text-sm">
+                <span className="relative block aspect-[37/48] w-12 shrink-0 overflow-hidden bg-surface">
+                  <Image src={i.image} alt="" fill unoptimized className={i.image.endsWith(".svg") ? "object-contain p-1" : "object-cover"} />
                 </span>
                 <span className="flex-1">
                   {i.name}
-                  <span className="block text-xs text-stone">
-                    {i.colorName} · {i.size} · SL {i.quantity}
+                  <span className="block text-xs text-muted">
+                    {i.colorName} / {i.size} × {i.quantity}
                   </span>
                 </span>
-                <span>{formatPrice(i.price * i.quantity)}</span>
+                <span className="font-semibold">{formatPrice(i.price * i.quantity)}</span>
               </li>
             ))}
           </ul>
           {result?.message && (
-            <p className="mt-6 text-sm text-danger" role="alert">
+            <p className="mt-4 text-sm text-sale" role="alert">
               {result.message}
             </p>
           )}
-          <button type="submit" disabled={pending} className="btn btn-primary mt-8 w-full">
-            {pending ? <Loader2 size={16} className="animate-spin" /> : null}
+          <button type="submit" disabled={pending} className="btn btn-primary mt-6 w-full uppercase">
+            {pending && <Loader2 size={16} className="animate-spin" />}
             {pending ? "Đang gửi đơn…" : "Hoàn tất đặt hàng"}
           </button>
         </OrderSummary>

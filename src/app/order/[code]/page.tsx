@@ -13,54 +13,60 @@ export default async function OrderPage({ params }: PageProps<"/order/[code]">) 
   if (!order) notFound();
 
   return (
-    <div className="container-lux max-w-3xl pt-20">
+    <div className="container-shop max-w-3xl pt-14">
       <div className="text-center">
-        <CheckCircle2 className="mx-auto text-gold" size={44} strokeWidth={1} />
-        <p className="eyebrow mt-6 text-gold-deep">Cảm ơn bạn</p>
-        <h1 className="mt-3 font-serif text-5xl font-medium">Đơn hàng đã được ghi nhận</h1>
-        <p className="mt-4 text-stone">
-          Mã đơn của bạn là <span className="font-medium text-noir">{order.code}</span>. Chúng tôi sẽ gọi xác nhận tới số{" "}
-          {order.phone} trong thời gian sớm nhất.
+        <CheckCircle2 className="mx-auto text-success" size={56} strokeWidth={1.5} />
+        <h1 className="section-title mt-4">Đặt hàng thành công!</h1>
+        <p className="mt-2 text-muted">
+          Mã đơn hàng: <span className="font-bold text-ink">{order.code}</span>. Chúng tôi sẽ gọi xác nhận tới số{" "}
+          <span className="font-semibold text-ink">{order.phone}</span> trong thời gian sớm nhất.
         </p>
       </div>
 
-      <div className="mt-14 bg-pearl p-8">
-        <ul className="divide-y divide-line">
+      <div className="mt-10 rounded-md border border-line p-6">
+        <h2 className="font-bold uppercase">Chi tiết đơn hàng</h2>
+        <ul className="mt-3 divide-y divide-line">
           {order.items.map((item) => (
-            <li key={item.id} className="flex justify-between gap-6 py-4 text-sm">
+            <li key={item.id} className="flex justify-between gap-6 py-3 text-sm">
               <span>
                 {item.productName}
-                <span className="block text-xs text-stone">
-                  {item.colorName} · Size {item.size} · SL {item.quantity}
+                <span className="block text-xs text-muted">
+                  {item.colorName} / {item.size} × {item.quantity}
                 </span>
               </span>
-              <span>{formatPrice(item.unitPrice * item.quantity)}</span>
+              <span className="font-semibold">{formatPrice(item.unitPrice * item.quantity)}</span>
             </li>
           ))}
         </ul>
-        <dl className="mt-4 space-y-2 border-t border-line pt-4 text-sm">
+        <dl className="mt-2 space-y-2 border-t border-line pt-4 text-sm">
           <div className="flex justify-between">
-            <dt className="text-stone">Tạm tính</dt>
+            <dt className="text-muted">Tạm tính</dt>
             <dd>{formatPrice(order.subtotal)}</dd>
           </div>
+          {order.discount > 0 && (
+            <div className="flex justify-between">
+              <dt className="text-muted">Giảm giá ({order.voucherCode})</dt>
+              <dd className="text-sale">-{formatPrice(order.discount)}</dd>
+            </div>
+          )}
           <div className="flex justify-between">
-            <dt className="text-stone">Phí giao hàng</dt>
+            <dt className="text-muted">Phí giao hàng</dt>
             <dd>{order.shippingFee === 0 ? "Miễn phí" : formatPrice(order.shippingFee)}</dd>
           </div>
-          <div className="flex items-baseline justify-between pt-2">
-            <dt>Tổng thanh toán (COD)</dt>
-            <dd className="font-serif text-2xl">{formatPrice(order.total)}</dd>
+          <div className="flex items-baseline justify-between border-t border-line pt-3">
+            <dt className="font-bold">Tổng thanh toán (COD)</dt>
+            <dd className="text-xl font-extrabold text-sale">{formatPrice(order.total)}</dd>
           </div>
         </dl>
-        <div className="mt-8 border-t border-line pt-6 text-sm">
-          <p className="eyebrow">Giao đến</p>
-          <p className="mt-3">{order.customerName}</p>
-          <p className="text-stone">{order.address}</p>
-          {order.note && <p className="mt-2 text-stone italic">Ghi chú: {order.note}</p>}
+        <div className="mt-6 rounded bg-surface p-4 text-sm">
+          <p className="font-bold">Giao đến</p>
+          <p className="mt-1">{order.customerName}</p>
+          <p className="text-muted">{order.address}</p>
+          {order.note && <p className="mt-1 text-muted italic">Ghi chú: {order.note}</p>}
         </div>
       </div>
 
-      <div className="mt-10 text-center">
+      <div className="mt-8 text-center">
         <Link href="/shop" className="btn btn-primary">
           Tiếp tục mua sắm
         </Link>

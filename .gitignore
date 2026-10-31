@@ -46,3 +46,6 @@ next-env.d.ts
 
 # cấu hình riêng của công cụ trên máy
 /.claude/
+
+# ảnh gốc bạn tải về (đã chép sang public/products/)
+/Cloth/

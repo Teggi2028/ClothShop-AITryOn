@@ -1,52 +1,62 @@
 import { Camera } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { formatPrice } from "@/lib/format";
+import { BRAND } from "@/lib/brand";
+import { discountPercent, formatPrice } from "@/lib/format";
 import type { ProductWithColors } from "@/lib/products";
 
 export function ProductCard({ product }: { product: ProductWithColors }) {
-  const [first, second] = product.colors;
+  const first = product.colors[0];
+  // Ảnh chính: ảnh chụp thật nếu có; ảnh khi rê chuột: hình minh hoạ hoặc màu thứ 2
+  const main = first.photo ?? first.image;
+  const hover = first.photo ? first.image : product.colors[1]?.image;
+  const off = discountPercent(product.price, product.compareAtPrice);
 
   return (
-    <Link href={`/product/${product.slug}`} className="group block">
-      <div className="relative aspect-[4/5] overflow-hidden bg-sand">
+    <div className="group">
+      <Link href={`/product/${product.slug}`} className="relative block aspect-[37/48] overflow-hidden bg-surface">
         <Image
-          src={first.image}
-          alt={`${product.name} — màu ${first.name}`}
+          src={main}
+          alt={`${product.name} — ${first.name}`}
           fill
           unoptimized
-          className={`object-contain p-8 transition duration-700 ease-[var(--ease-lux)] group-hover:scale-[1.03] ${second ? "group-hover:opacity-0" : ""}`}
+          className={`${first.photo ? "object-cover" : "object-contain p-6"} transition duration-500 ${hover ? "group-hover:opacity-0" : ""}`}
         />
-        {second && (
-          <Image
-            src={second.image}
-            alt=""
-            fill
-            unoptimized
-            className="object-contain p-8 opacity-0 transition duration-700 ease-[var(--ease-lux)] group-hover:scale-[1.03] group-hover:opacity-100"
-          />
+        {hover && (
+          <Image src={hover} alt="" fill unoptimized className="object-contain p-6 opacity-0 transition duration-500 group-hover:opacity-100" />
         )}
-        <div className="absolute inset-x-3 top-3 flex items-start justify-between">
-          {product.isNew ? <span className="eyebrow border border-line bg-pearl px-2 py-1 text-[10px]">Mới</span> : <span />}
-          <span className="grid size-8 place-items-center rounded-full bg-pearl/90 text-gold-deep" title="Có thể thử bằng camera">
-            <Camera size={15} strokeWidth={1.5} />
-          </span>
+        <div className="absolute top-2 left-2 flex flex-col items-start gap-1">
+          {product.isNew && <span className="badge-new">🔥 Hàng mới về</span>}
+          {product.featured && !product.isNew && <span className="badge-new bg-ink">Bán chạy</span>}
         </div>
-      </div>
-      <div className="mt-4 space-y-1">
-        <h3 className="text-[13px] leading-5 font-normal">{product.name}</h3>
-        <p className="font-serif text-lg">
-          {formatPrice(product.price)}
-          {product.compareAtPrice && (
-            <span className="ml-2 text-sm text-stone line-through">{formatPrice(product.compareAtPrice)}</span>
+        <span className="absolute right-2 bottom-2 flex items-center gap-1 rounded-full bg-white/90 px-2 py-1 text-[11px] font-bold text-accent shadow-sm">
+          <Camera size={13} /> Thử được
+        </span>
+      </Link>
+      <div className="mt-3 space-y-1">
+        <p className="text-[11px] tracking-[0.2em] text-subtle uppercase">{BRAND.name}</p>
+        <h3 className="line-clamp-2 min-h-[44px] text-[15px] leading-[22px]">
+          <Link href={`/product/${product.slug}`} className="hover:text-accent">
+            {product.name}
+          </Link>
+        </h3>
+        <p className="font-bold text-sale">{formatPrice(product.price)}</p>
+        <p className="flex h-5 items-center gap-2 text-[13px]">
+          {off > 0 && (
+            <>
+              <span className="text-muted line-through">{formatPrice(product.compareAtPrice!)}</span>
+              <span className="badge-sale">-{off}%</span>
+            </>
           )}
         </p>
         <div className="flex gap-1.5 pt-1">
           {product.colors.map((c) => (
-            <span key={c.id} className="size-3 rounded-full border border-noir/15" style={{ background: c.hex }} title={c.name} />
+            <span key={c.id} className="size-5 rounded-full border border-line p-0.5" title={c.name}>
+              <span className="block size-full rounded-full" style={{ background: c.hex }} />
+            </span>
           ))}
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
