@@ -1,0 +1,89 @@
+// Định nghĩa cấu trúc cơ sở dữ liệu (database).
+// Sau khi sửa file này, chạy: npm run db:push  (cập nhật database)
+// Tài liệu: https://www.prisma.io/docs/orm/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  // SQLite = database nằm gọn trong 1 file (prisma/dev.db), không cần cài server.
+  url      = "file:./dev.db"
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  slug     String    @unique
+  name     String
+  order    Int       @default(0)
+  products Product[]
+}
+
+model Product {
+  id             Int            @id @default(autoincrement())
+  slug           String         @unique
+  name           String
+  description    String
+  material       String
+  price          Int // đơn vị: đồng
+  compareAtPrice Int? // giá gốc (nếu đang giảm giá)
+  sizes          String // "S,M,L,XL" — SQLite không hỗ trợ mảng nên lưu dạng chuỗi
+  isNew          Boolean        @default(false)
+  featured       Boolean        @default(false)
+  // --- Thông tin cho phòng thử đồ ---
+  garmentStyle   String // tee | shirt | polo | knit | blazer | turtleneck
+  sleeve         String // short | long
+  fitWidth       Float          @default(1) // hệ số độ rộng áo so với vai người
+  fitOffsetY     Float          @default(0) // dịch áo lên/xuống (tính theo độ rộng vai)
+  categoryId     Int
+  category       Category       @relation(fields: [categoryId], references: [id])
+  colors         ProductColor[]
+  createdAt      DateTime       @default(now())
+}
+
+model ProductColor {
+  id          Int     @id @default(autoincrement())
+  key         String // vd: "noir", "ivory" — dùng trong URL
+  name        String // tên hiển thị: "Đen tuyền"
+  hex         String
+  image       String // ảnh hiển thị trong cửa hàng
+  // --- Ảnh nền trong suốt dùng để "mặc" lên người trong phòng thử ---
+  torsoAsset       String // thân áo
+  sleeveUpperAsset String // tay áo: đoạn vai → khuỷu tay
+  sleeveLowerAsset String? // tay áo: đoạn khuỷu → cổ tay (chỉ áo tay dài)
+  position         Int     @default(0)
+  productId   Int
+  product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, key])
+}
+
+model Order {
+  id            Int         @id @default(autoincrement())
+  code          String      @unique // mã đơn hiển thị cho khách, vd: AURA-7KX2Q9
+  customerName  String
+  phone         String
+  email         String?
+  address       String
+  note          String?
+  paymentMethod String      @default("COD")
+  subtotal      Int
+  shippingFee   Int
+  total         Int
+  status        String      @default("PENDING") // PENDING | CONFIRMED | SHIPPING | DONE | CANCELLED
+  items         OrderItem[]
+  createdAt     DateTime    @default(now())
+}
+
+model OrderItem {
+  id          Int    @id @default(autoincrement())
+  orderId     Int
+  order       Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   Int
+  productName String // lưu lại tên & giá lúc mua (phòng khi sau này sản phẩm đổi giá)
+  colorName   String
+  size        String
+  unitPrice   Int
+  quantity    Int
+}
