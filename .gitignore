@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -47,5 +48,6 @@ next-env.d.ts
 # cấu hình riêng của công cụ trên máy
 /.claude/
 
-# ảnh gốc bạn tải về (đã chép sang public/products/)
+# ảnh gốc bạn tải về + ảnh áo Savani chép sang public (bản quyền Savani — chỉ dùng cho đồ án, không đưa lên GitHub)
 /Cloth/
+/public/products/savani/

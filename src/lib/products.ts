@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { cacheTag } from "next/cache";
+import { COLOR_FAMILIES } from "@/data/catalog";
 import { db } from "./db";
 
 // Các hàm đọc sản phẩm từ database — chỉ gọi được ở phía server (Server Component, Server Action).
@@ -55,12 +56,15 @@ export async function getCategories() {
   return db.category.findMany({ orderBy: { order: "asc" } });
 }
 
-/** Danh sách màu đang có (không trùng) — dùng cho bộ lọc màu */
+/** Các họ màu đang có hàng (Đen, Trắng, Xanh than…) — dùng cho bộ lọc màu */
 export async function getColorOptions() {
   "use cache";
   cacheTag("products");
-  const colors = await db.productColor.findMany({ select: { key: true, name: true, hex: true }, orderBy: { name: "asc" } });
-  return [...new Map(colors.map((c) => [c.key, c])).values()];
+  const used = await db.productColor.findMany({ select: { family: true }, distinct: ["family"] });
+  const families = new Set(used.map((c) => c.family));
+  return Object.entries(COLOR_FAMILIES)
+    .filter(([key]) => families.has(key))
+    .map(([key, f]) => ({ key, name: f.name, hex: f.hex }));
 }
 
 export async function getProducts(filters: ProductFilters = {}) {
@@ -72,7 +76,7 @@ export async function getProducts(filters: ProductFilters = {}) {
   const products = await db.product.findMany({
     where: {
       category: filters.category ? { slug: filters.category } : undefined,
-      colors: filters.colors?.length ? { some: { key: { in: filters.colors } } } : undefined,
+      colors: filters.colors?.length ? { some: { family: { in: filters.colors } } } : undefined,
       price: price ? { gte: price.min, lte: price.max } : undefined,
     },
     include: withColors,

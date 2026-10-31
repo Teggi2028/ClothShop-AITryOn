@@ -9,13 +9,13 @@ const SERVICES = [
   { icon: Truck, title: "Miễn phí giao hàng", text: "Cho đơn từ 500.000₫" },
   { icon: RefreshCw, title: "Đổi trả 30 ngày", text: "Đổi size, đổi mẫu dễ dàng" },
   { icon: ShieldCheck, title: "Kiểm tra khi nhận", text: "Ưng ý mới thanh toán" },
-  { icon: Camera, title: "Thử đồ bằng camera", text: "Xem áo trên người bạn" },
+  { icon: Camera, title: "Thử đồ bằng AI", text: "Xem áo trên người bạn" },
 ];
 
 const STEPS = [
   { no: 1, title: "Chọn mẫu áo", text: "Vào phòng thử, chọn mẫu và màu bạn thích." },
-  { no: 2, title: "Bật camera", text: "Ngồi thẳng trước laptop, áo tự khớp theo vai." },
-  { no: 3, title: "Chụp & đặt hàng", text: "Lưu ảnh, so sánh màu rồi thêm vào giỏ." },
+  { no: 2, title: "Chụp ảnh", text: "Chụp bằng webcam hoặc tải ảnh lên, AI tạo ảnh bạn mặc áo." },
+  { no: 3, title: "So sánh & đặt hàng", text: "Thử nhiều màu, lưu ảnh rồi thêm vào giỏ." },
 ];
 
 function SectionHeader({ title, href }: { title: string; href: string }) {
@@ -36,7 +36,7 @@ export default async function HomePage() {
     getCategories(),
     getProducts(),
   ]);
-  const heroPhotos = all.flatMap((p) => p.colors.filter((c) => c.photo).map((c) => ({ src: c.photo!, alt: p.name }))).slice(0, 3);
+  const heroPhotos = (newArrivals.length >= 3 ? newArrivals : all).slice(0, 3).map((p) => ({ src: p.colors[0].image, alt: p.name }));
 
   return (
     <div className="container-shop">
@@ -50,14 +50,14 @@ export default async function HomePage() {
             <span className="text-promo">Giảm đến 50%</span>
           </h1>
           <p className="mt-4 max-w-md text-white/80">
-            Hơn 15 mẫu áo nam mới. Không chắc có hợp? Bật camera và thử ngay trên web trước khi đặt hàng.
+            Hơn {Math.floor(all.length / 10) * 10} mẫu áo nam. Không chắc có hợp? Chụp một tấm ảnh và để AI cho bạn xem trước khi đặt hàng.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/shop" className="btn bg-white text-ink hover:bg-promo">
               Mua ngay
             </Link>
             <Link href="/try-on" className="btn btn-accent">
-              <Camera size={18} /> Thử đồ bằng camera
+              <Camera size={18} /> Thử đồ bằng AI
             </Link>
           </div>
         </div>
@@ -93,18 +93,18 @@ export default async function HomePage() {
         <h2 className="section-title uppercase">Danh mục sản phẩm</h2>
         <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {categories.map((c) => {
-            const sample = all.find((p) => p.categoryId === c.id && p.colors[0].photo) ?? all.find((p) => p.categoryId === c.id);
+            const sample = all.find((p) => p.categoryId === c.id);
             const color = sample?.colors[0];
             return (
               <Link key={c.id} href={`/shop?category=${c.slug}`} className="group text-center">
                 <div className="relative aspect-square overflow-hidden rounded-full bg-surface">
                   {color && (
                     <Image
-                      src={color.photo ?? color.image}
+                      src={color.image}
                       alt=""
                       fill
                       unoptimized
-                      className={`${color.photo ? "object-cover" : "object-contain p-6"} transition duration-500 group-hover:scale-105`}
+                      className="object-cover transition duration-500 group-hover:scale-105"
                     />
                   )}
                 </div>
@@ -129,9 +129,9 @@ export default async function HomePage() {
       <section className="mt-14 grid gap-8 rounded-lg bg-accent-soft p-8 lg:grid-cols-[1fr_1.6fr] lg:p-10">
         <div>
           <p className="font-extrabold text-accent uppercase">Tính năng mới</p>
-          <h2 className="mt-2 text-3xl font-extrabold">Thử áo bằng camera, ngay trên laptop</h2>
+          <h2 className="mt-2 text-3xl font-extrabold">Chụp một tấm, AI cho bạn mặc thử</h2>
           <p className="mt-3 text-muted">
-            Nhận diện dáng người chạy ngay trên trình duyệt, hình ảnh của bạn không bao giờ rời khỏi máy.
+            Chụp bằng webcam hoặc tải ảnh lên, AI tạo ảnh bạn đang mặc chiếc áo đã chọn chỉ sau khoảng nửa phút.
           </p>
           <Link href="/try-on" className="btn btn-accent mt-6">
             <Camera size={18} /> Vào phòng thử

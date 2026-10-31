@@ -17,12 +17,21 @@ import { SortSelect } from "./SortSelect";
 
 export const metadata: Metadata = { title: "Áo nam" };
 
-type Query = { category?: string; color?: string; price?: string; sort?: string; q?: string };
+type Query = { category?: string; color?: string; price?: string; sort?: string; q?: string; page?: string };
+
+const PAGE_SIZE = 24;
 
 export default async function ShopPage({ searchParams }: PageProps<"/shop">) {
   const raw = await searchParams;
   const one = (v: string | string[] | undefined) => (typeof v === "string" && v ? v : undefined);
-  const query: Query = { category: one(raw.category), color: one(raw.color), price: one(raw.price), sort: one(raw.sort), q: one(raw.q) };
+  const query: Query = {
+    category: one(raw.category),
+    color: one(raw.color),
+    price: one(raw.price),
+    sort: one(raw.sort),
+    q: one(raw.q),
+    page: one(raw.page),
+  };
 
   const sort = (query.sort && query.sort in SORT_OPTIONS ? query.sort : "newest") as SortKey;
   const price = query.price && query.price in PRICE_RANGES ? (query.price as PriceRangeKey) : undefined;
@@ -34,12 +43,16 @@ export default async function ShopPage({ searchParams }: PageProps<"/shop">) {
     getProducts({ category: query.category, colors, price, q: query.q, sort }),
   ]);
   const current = categories.find((c) => c.slug === query.category);
+  const pageCount = Math.max(1, Math.ceil(products.length / PAGE_SIZE));
+  const page = Math.min(Math.max(1, Number(query.page) || 1), pageCount);
+  const pageItems = products.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  // Tạo link giữ nguyên các bộ lọc khác, chỉ đổi những gì truyền vào (undefined = bỏ lọc)
+  // Tạo link giữ nguyên các bộ lọc khác, chỉ đổi những gì truyền vào (undefined = bỏ lọc).
+  // Đổi bộ lọc thì quay về trang 1 (patch không có "page" → bỏ page).
   const href = (patch: Partial<Query>) => {
-    const next = { ...query, ...patch };
+    const next = { ...query, page: undefined, ...patch };
     const qs = new URLSearchParams();
-    for (const [k, v] of Object.entries(next)) if (v && !(k === "sort" && v === "newest")) qs.set(k, v);
+    for (const [k, v] of Object.entries(next)) if (v && !(k === "sort" && v === "newest") && !(k === "page" && v === "1")) qs.set(k, v);
     const s = qs.toString();
     return s ? `/shop?${s}` : "/shop";
   };
@@ -146,10 +159,25 @@ export default async function ShopPage({ searchParams }: PageProps<"/shop">) {
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-x-5 gap-y-10 md:grid-cols-3 xl:grid-cols-4">
-              {products.map((p) => (
+              {pageItems.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
             </div>
+          )}
+
+          {pageCount > 1 && (
+            <nav className="mt-12 flex flex-wrap justify-center gap-2" aria-label="Phân trang">
+              {Array.from({ length: pageCount }, (_, i) => i + 1).map((n) => (
+                <Link
+                  key={n}
+                  href={href({ page: String(n) })}
+                  className={`grid size-10 place-items-center rounded border text-sm ${n === page ? "border-ink bg-ink text-white" : "border-line hover:border-ink"}`}
+                  aria-current={n === page ? "page" : undefined}
+                >
+                  {n}
+                </Link>
+              ))}
+            </nav>
           )}
         </div>
       </div>

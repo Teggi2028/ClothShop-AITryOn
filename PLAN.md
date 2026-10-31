@@ -1,5 +1,7 @@
 # PLAN — Website bán quần áo + Thử đồ bằng camera (AI Try-On)
 
+> **Cập nhật 31/10/2026:** phòng thử đã chuyển từ Cách A (AR 2D) sang **Cách B — AI tạo ảnh** (IDM-VTON trên Hugging Face). Chi tiết hiện tại xem [CONTEXT.md](CONTEXT.md) mục 4.
+
 > **Trạng thái:** v0.2 (31/10/2026) — đã chốt yêu cầu (mục 11), đã code xong Giai đoạn 0–5. Cách chạy: xem [README.md](README.md).
 > **Đi kèm:** [BRAND.md](BRAND.md) — quy chuẩn giao diện / phong cách.
 > **Cách dùng file này:** làm lần lượt từng giai đoạn, tick `[x]` khi xong. Mục **"Cần học"** / **"API then chốt"** giúp bạn hiểu code để thuyết trình đồ án.

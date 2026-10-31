@@ -7,23 +7,22 @@ import type { ProductWithColors } from "@/lib/products";
 
 export function ProductCard({ product }: { product: ProductWithColors }) {
   const first = product.colors[0];
-  // Ảnh chính: ảnh chụp thật nếu có; ảnh khi rê chuột: hình minh hoạ hoặc màu thứ 2
-  const main = first.photo ?? first.image;
-  const hover = first.photo ? first.image : product.colors[1]?.image;
+  // Ảnh chính: màu đầu tiên; rê chuột: màu thứ 2 (nếu có)
+  const hover = product.colors[1]?.image;
   const off = discountPercent(product.price, product.compareAtPrice);
 
   return (
     <div className="group">
       <Link href={`/product/${product.slug}`} className="relative block aspect-[37/48] overflow-hidden bg-surface">
         <Image
-          src={main}
+          src={first.image}
           alt={`${product.name} — ${first.name}`}
           fill
           unoptimized
-          className={`${first.photo ? "object-cover" : "object-contain p-6"} transition duration-500 ${hover ? "group-hover:opacity-0" : ""}`}
+          className={`object-cover transition duration-500 ${hover ? "group-hover:opacity-0" : ""}`}
         />
         {hover && (
-          <Image src={hover} alt="" fill unoptimized className="object-contain p-6 opacity-0 transition duration-500 group-hover:opacity-100" />
+          <Image src={hover} alt="" fill unoptimized className="object-cover opacity-0 transition duration-500 group-hover:opacity-100" />
         )}
         <div className="absolute top-2 left-2 flex flex-col items-start gap-1">
           {product.isNew && <span className="badge-new">🔥 Hàng mới về</span>}
@@ -50,7 +49,7 @@ export function ProductCard({ product }: { product: ProductWithColors }) {
           )}
         </p>
         <div className="flex gap-1.5 pt-1">
-          {product.colors.map((c) => (
+          {product.colors.slice(0, 6).map((c) => (
             <span key={c.id} className="size-5 rounded-full border border-line p-0.5" title={c.name}>
               <span className="block size-full rounded-full" style={{ background: c.hex }} />
             </span>

@@ -9,7 +9,7 @@ const NAV = [
   { href: "/shop?category=so-mi", label: "Sơ mi" },
   { href: "/shop?category=polo", label: "Polo" },
   { href: "/shop?category=thun", label: "Áo thun" },
-  { href: "/shop?category=ao-len", label: "Áo len & nỉ" },
+  { href: "/shop?category=ao-ni", label: "Áo nỉ" },
   { href: "/shop?category=ao-khoac", label: "Áo khoác" },
 ];
 
@@ -17,7 +17,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 bg-white shadow-[0_1px_0_var(--color-line)]">
       <div className="bg-topbar px-4 py-2 text-center text-[13px] font-semibold text-white uppercase">
-        Miễn phí giao hàng cho đơn từ 500K · Nhập mã AURA30K giảm 30K · Thử đồ bằng camera ngay trên web
+        Miễn phí giao hàng cho đơn từ 500K · Nhập mã AURA30K giảm 30K · Thử đồ bằng AI ngay trên web
       </div>
       <div className="container-shop flex h-[68px] items-center gap-8">
         <Logo className="shrink-0" />

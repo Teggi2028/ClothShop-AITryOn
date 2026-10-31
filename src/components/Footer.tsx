@@ -18,7 +18,7 @@ export function Footer() {
           <ul className="mt-4 space-y-2.5 text-muted">
             <li><Link href="/shop" className="hover:text-ink">Tất cả sản phẩm</Link></li>
             <li><Link href="/shop?sort=newest" className="hover:text-ink">Hàng mới về</Link></li>
-            <li><Link href="/try-on" className="hover:text-ink">Phòng thử bằng camera</Link></li>
+            <li><Link href="/try-on" className="hover:text-ink">Phòng thử AI</Link></li>
             <li><Link href="/cart" className="hover:text-ink">Giỏ hàng</Link></li>
           </ul>
         </div>

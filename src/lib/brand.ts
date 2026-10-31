@@ -3,7 +3,7 @@ export const BRAND = {
   name: "AURA",
   subName: "Fashion",
   fullName: "AURA Fashion",
-  tagline: "Thời trang nam — thử bằng camera trước khi mua.",
+  tagline: "Thời trang nam — thử bằng AI trước khi mua.",
   hotline: "1900 6868",
   email: "hotro@aura-fashion.vn",
   address: "12 Đồng Khởi, Quận 1, TP. Hồ Chí Minh",

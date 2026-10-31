@@ -21,12 +21,12 @@ export type PurchaseProduct = {
   compareAtPrice: number | null;
   isNew: boolean;
   sizes: string[];
-  colors: { key: string; name: string; hex: string; image: string; photo: string | null }[];
+  colors: { key: string; name: string; hex: string; image: string }[];
+  source: string | null;
 };
 
 export function ProductPurchase({ product }: { product: PurchaseProduct }) {
   const [colorKey, setColorKey] = useState(product.colors[0].key);
-  const [imageIndex, setImageIndex] = useState(0);
   const [size, setSize] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
@@ -34,15 +34,7 @@ export function ProductPurchase({ product }: { product: PurchaseProduct }) {
   const add = useCart((s) => s.add);
 
   const color = product.colors.find((c) => c.key === colorKey) ?? product.colors[0];
-  // Bộ ảnh của màu đang chọn: ảnh chụp thật (nếu có) + hình minh hoạ
-  const gallery = [color.photo, color.image].filter((src): src is string => Boolean(src));
-  const mainImage = gallery[Math.min(imageIndex, gallery.length - 1)];
   const off = discountPercent(product.price, product.compareAtPrice);
-
-  function selectColor(key: string) {
-    setColorKey(key);
-    setImageIndex(0);
-  }
 
   function handleAdd() {
     if (!size) {
@@ -58,7 +50,7 @@ export function ProductPurchase({ product }: { product: PurchaseProduct }) {
         colorName: color.name,
         size,
         price: product.price,
-        image: color.photo ?? color.image,
+        image: color.image,
       },
       quantity,
     );
@@ -69,29 +61,19 @@ export function ProductPurchase({ product }: { product: PurchaseProduct }) {
   return (
     <div className="mt-6 grid gap-10 lg:grid-cols-[1.1fr_1fr]">
       {/* ===== Ảnh ===== */}
-      <div className="grid grid-cols-[72px_1fr] gap-3">
-        <div className="flex flex-col gap-2">
-          {gallery.map((src, i) => (
-            <button
-              key={src}
-              onClick={() => setImageIndex(i)}
-              className={`relative aspect-[37/48] overflow-hidden border bg-surface ${src === mainImage ? "border-ink" : "border-line hover:border-subtle"}`}
-              aria-label={`Xem ảnh ${i + 1}`}
-            >
-              <Image src={src} alt="" fill unoptimized className={src.endsWith(".svg") ? "object-contain p-1" : "object-cover"} />
-            </button>
-          ))}
-        </div>
+      <div>
         <div className="relative aspect-[37/48] overflow-hidden bg-surface">
-          <Image
-            src={mainImage}
-            alt={`${product.name} — ${color.name}`}
-            fill
-            unoptimized
-            priority
-            className={mainImage.endsWith(".svg") ? "object-contain p-10" : "object-cover"}
-          />
+          <Image src={color.image} alt={`${product.name} — ${color.name}`} fill unoptimized priority className="object-cover" />
         </div>
+        {product.source && (
+          <p className="mt-2 text-xs text-subtle">
+            Ảnh &amp; thông tin sản phẩm:{" "}
+            <a href={product.source} target="_blank" rel="noreferrer" className="underline hover:text-accent">
+              savani.vn
+            </a>{" "}
+            (dùng cho đồ án)
+          </p>
+        )}
       </div>
 
       {/* ===== Thông tin ===== */}
@@ -121,21 +103,17 @@ export function ProductPurchase({ product }: { product: PurchaseProduct }) {
           <p className="text-sm font-bold">
             Màu sắc: <span className="font-normal uppercase">{color.name}</span>
           </p>
-          <div className="mt-2 flex gap-2">
+          <div className="mt-2 flex flex-wrap gap-2">
             {product.colors.map((c) => (
               <button
                 key={c.key}
-                onClick={() => selectColor(c.key)}
+                onClick={() => setColorKey(c.key)}
                 className={`relative size-11 overflow-hidden rounded-full border-2 bg-surface ${c.key === color.key ? "border-ink" : "border-transparent"}`}
                 title={c.name}
                 aria-label={c.name}
                 aria-pressed={c.key === color.key}
               >
-                {c.photo ? (
-                  <Image src={c.photo} alt="" fill unoptimized className="object-cover" />
-                ) : (
-                  <span className="absolute inset-1 rounded-full" style={{ background: c.hex }} />
-                )}
+                <Image src={c.image} alt="" fill unoptimized className="object-cover" />
               </button>
             ))}
           </div>
@@ -151,7 +129,7 @@ export function ProductPurchase({ product }: { product: PurchaseProduct }) {
               <Ruler size={14} /> Hướng dẫn chọn size
             </span>
           </div>
-          <div className="mt-2 flex gap-2">
+          <div className="mt-2 flex flex-wrap gap-2">
             {product.sizes.map((s) => (
               <button
                 key={s}
@@ -171,7 +149,7 @@ export function ProductPurchase({ product }: { product: PurchaseProduct }) {
         <dl className="mt-5 grid grid-cols-2 gap-4 text-sm">
           <div>
             <dt className="font-bold">Kiểu tay áo:</dt>
-            <dd>{product.sleeve === "long" ? "Tay dài" : "Tay ngắn"}</dd>
+            <dd>{product.sleeve === "long" ? "Tay dài" : product.sleeve === "short" ? "Tay ngắn" : "Không tay"}</dd>
           </div>
           <div>
             <dt className="font-bold">Chất liệu:</dt>
@@ -200,7 +178,7 @@ export function ProductPurchase({ product }: { product: PurchaseProduct }) {
           </button>
         </div>
         <Link href={`/try-on?product=${product.slug}&color=${color.key}`} className="btn btn-accent mt-3 w-full uppercase">
-          <Camera size={18} /> Thử ngay bằng camera
+          <Camera size={18} /> Thử ngay bằng AI
         </Link>
 
         <div className="mt-8 border-t border-line pt-6">

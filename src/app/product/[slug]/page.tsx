@@ -38,7 +38,8 @@ export default async function ProductPage({ params }: PageProps<"/product/[slug]
           compareAtPrice: product.compareAtPrice,
           isNew: product.isNew,
           sizes: product.sizes.split(","),
-          colors: product.colors.map((c) => ({ key: c.key, name: c.name, hex: c.hex, image: c.image, photo: c.photo })),
+          colors: product.colors.map((c) => ({ key: c.key, name: c.name, hex: c.hex, image: c.image })),
+          source: product.source,
         }}
       />
 

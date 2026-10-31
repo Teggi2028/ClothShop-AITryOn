@@ -14,7 +14,7 @@ const mulish = Mulish({
 
 export const metadata: Metadata = {
   title: {
-    default: `${BRAND.fullName} — Thời trang nam, thử đồ bằng camera`,
+    default: `${BRAND.fullName} — Thời trang nam, thử đồ bằng AI`,
     template: `%s | ${BRAND.fullName}`,
   },
   description: `${BRAND.tagline} Áo sơ mi, polo, áo thun, áo len, áo khoác nam.`,

@@ -31,11 +31,8 @@ model Product {
   sizes          String // "S,M,L,XL" — SQLite không hỗ trợ mảng nên lưu dạng chuỗi
   isNew          Boolean        @default(false)
   featured       Boolean        @default(false)
-  // --- Thông tin cho phòng thử đồ ---
-  garmentStyle   String // tee | shirt | polo | knit | blazer | turtleneck
-  sleeve         String // short | long
-  fitWidth       Float          @default(1) // hệ số độ rộng áo so với vai người
-  fitOffsetY     Float          @default(0) // dịch áo lên/xuống (tính theo độ rộng vai)
+  sleeve         String // long | short | none
+  source         String? // trang sản phẩm gốc (ghi nguồn ảnh/dữ liệu)
   categoryId     Int
   category       Category       @relation(fields: [categoryId], references: [id])
   colors         ProductColor[]
@@ -44,16 +41,12 @@ model Product {
 
 model ProductColor {
   id          Int     @id @default(autoincrement())
-  key         String // vd: "noir", "ivory" — dùng trong URL
-  name        String // tên hiển thị: "Đen tuyền"
-  hex         String
-  image       String // hình minh hoạ (SVG) — luôn có
-  photo       String? // ảnh chụp thật (nếu có) — ưu tiên hiển thị
-  // --- Ảnh nền trong suốt dùng để "mặc" lên người trong phòng thử ---
-  torsoAsset       String // thân áo
-  sleeveUpperAsset String // tay áo: đoạn vai → khuỷu tay
-  sleeveLowerAsset String? // tay áo: đoạn khuỷu → cổ tay (chỉ áo tay dài)
-  position         Int     @default(0)
+  key         String // vd: "tim-than-010" — dùng trong URL
+  name        String // tên hiển thị: "Tím than 010"
+  family      String // họ màu cho bộ lọc: "xanh-than", "trang"… (xem COLOR_FAMILIES)
+  hex         String // màu chủ đạo đo từ ảnh
+  image       String // ảnh toàn thân áo, nền trắng — dùng cho cửa hàng và phòng thử AI
+  position    Int     @default(0)
   productId   Int
   product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 

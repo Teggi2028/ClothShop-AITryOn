@@ -66,7 +66,7 @@ export function PromoBox() {
         ))}
         <li>✅ Nhận hàng, kiểm tra ưng ý mới thanh toán</li>
         <li>✅ Đổi hàng trong vòng 30 ngày</li>
-        <li>✅ Thử áo bằng camera trước khi mua</li>
+        <li>✅ Thử áo bằng AI trước khi mua</li>
       </ul>
       <div className="mt-4 flex flex-wrap gap-2">
         {VOUCHERS.map((v) => (

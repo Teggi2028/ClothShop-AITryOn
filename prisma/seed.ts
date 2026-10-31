@@ -1,8 +1,8 @@
-// Đổ dữ liệu mẫu vào database. Chạy: npm run db:seed
-// Cảnh báo: script XOÁ toàn bộ sản phẩm cũ (đơn hàng được giữ nguyên) rồi tạo lại từ src/data/catalog.ts.
+// Đổ dữ liệu sản phẩm vào database. Chạy: npm run db:seed
+// Cảnh báo: script XOÁ toàn bộ sản phẩm cũ (đơn hàng được giữ nguyên) rồi tạo lại từ src/data/products.json.
 
 import { PrismaClient } from "@prisma/client";
-import { CATEGORIES, COLORS, PRODUCTS, SIZES, garmentPaths } from "../src/data/catalog";
+import { CATEGORIES, PRODUCTS } from "../src/data/catalog";
 
 const prisma = new PrismaClient();
 
@@ -25,24 +25,15 @@ async function main() {
         description: p.description,
         material: p.material,
         price: p.price,
-        compareAtPrice: p.compareAtPrice ?? null,
-        sizes: SIZES.join(","),
-        isNew: p.isNew ?? false,
-        featured: p.featured ?? false,
-        garmentStyle: p.style,
+        compareAtPrice: p.compareAtPrice,
+        sizes: p.sizes.join(","),
+        isNew: p.isNew,
+        featured: p.featured,
         sleeve: p.sleeve,
-        fitWidth: p.fitWidth ?? 1,
+        source: p.source,
+        createdAt: new Date(p.createdAt),
         categoryId: categoryIds[p.category],
-        colors: {
-          create: p.colors.map((key, position) => ({
-            key,
-            name: COLORS[key].name,
-            hex: COLORS[key].hex,
-            position,
-            photo: p.photos?.[key] ?? null,
-            ...garmentPaths(p.slug, key, p.sleeve),
-          })),
-        },
+        colors: { create: p.colors.map((c, position) => ({ ...c, position })) },
       },
     });
   }
